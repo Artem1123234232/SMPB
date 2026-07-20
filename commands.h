@@ -1,5 +1,6 @@
 #include <QString>
 #include <QStringList>
+#include <iostream>
 
 void commandHelp (QString &args, QStringList &pams){
     std::cout << "\033[32mCommands: " << std::endl;
