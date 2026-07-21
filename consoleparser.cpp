@@ -6,32 +6,57 @@ ConsoleParser::ConsoleParser(QObject *parent) : QObject(parent) {
 }
 
 void ConsoleParser::inputFunction() {
-    QString inputString = QString("\033[35m[SMPD:") + virtPath + QString("]$ \033[0m");
-    std::string commandStdString;
+    // Пишем инпут строку`
+    std::cout << "\033[35m[SMPD]$ \033[0m" << std::flush;
 
-    // Пишем инпут строку
-    std::cout << inputString.toStdString() << std::flush;
 
     // Читаем всю строку, включая пробелы, пока пользователь не нажмет Enter
+    std::string commandStdString;
     std::getline(std::cin, commandStdString);
-    QString commandString = QString::fromStdString(commandStdString).trimmed();
+    //QString commandString = QString::fromStdString(commandStdString).trimmed();
 
-    if (commandString.isEmpty()){
+    if (commandStdString.empty()){
         return; // Просто выходим, ведь парсить нечего
     }
 
+
     // Парсим строку
-    QStringList commandStringList = commandString.split(QRegularExpression("\\s+"));
-    QString command = commandStringList[0].toLower();
+    std::vector<std::string> commandStdStringList;
+    std::string block = "";
+    bool backslash_mode = false;
+    bool string_mode = false;
+    for (char chr : commandStdString+' ') {
+        if (backslash_mode){
+            if (chr == 'n') block += '\n';
+            else if (chr == 't') block += '\t';
+            else if (chr == 'r') block += '\r';
+            else block += chr;
+        }
+        else if (chr == '\"'){
+            string_mode = !string_mode;
+        }
+        else if (chr != '\\' && (chr != ' ' || string_mode)){
+            block += chr;
+        }
+        else if (chr != '\\'){
+            if (!block.empty()) commandStdStringList.push_back(block);
+            block = "";
+        }
+
+        backslash_mode = chr == '\\';
+    }
+
+    QString command = QString::fromStdString(commandStdStringList[0]);
     QString args;
     QStringList pams;
-    for (int i = 1; i < commandStringList.size(); i++){
-        QString element = commandStringList[i];
+    for (const std::string& element : commandStdStringList) {
+        QString qElement = QString::fromStdString(element);
+        //qDebug() << "Element: " << qElement;
         if (element[0] == '-'){
-            args +=  element.sliced(1);
+            args +=  qElement.sliced(1);
         }
         else{
-            pams.append(element);
+            pams.append(qElement);
         }
     }
 
