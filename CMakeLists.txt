@@ -17,6 +17,10 @@ add_executable(smpb
   consoleparser.h
   consoleparser.cpp
   commands.h
+  commands.cpp
+  smpbcore.h
+  smpbcore.cpp
+
 )
 target_link_libraries(smpb PRIVATE Qt${QT_VERSION_MAJOR}::Core)
 

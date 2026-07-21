@@ -5,14 +5,23 @@ ConsoleParser::ConsoleParser(QObject *parent) : QObject(parent) {
     // Здесь можно инициализировать что-то при создании объекта
 }
 
+void ConsoleParser::connectCommandsLib(CommandsLibrary &t_commandsLibrary){
+    commandsLibrary = &t_commandsLibrary;
+}
+
+void ConsoleParser::connectSmpbCore(SmpbCore &t_smpbCore){
+    smpbCore = &t_smpbCore;
+}
+
 void ConsoleParser::inputFunction() {
-    // Пишем инпут строку`
-    std::cout << "\033[35m[SMPD]$ \033[0m" << std::flush;
+    // Пишем инпут строку
+    std::cout << "\033[35m[SMPB]$ \033[0m" << std::flush;
 
 
     // Читаем всю строку, включая пробелы, пока пользователь не нажмет Enter
     std::string commandStdString;
     std::getline(std::cin, commandStdString);
+    //std::cout << commandStdString << std::endl;
     //QString commandString = QString::fromStdString(commandStdString).trimmed();
 
     if (commandStdString.empty()){
@@ -46,7 +55,7 @@ void ConsoleParser::inputFunction() {
         backslash_mode = chr == '\\';
     }
 
-    QString command = QString::fromStdString(commandStdStringList[0]);
+    QString command = QString::fromStdString(commandStdStringList[0]).toLower();
     QString args;
     QStringList pams;
     for (const std::string& element : commandStdStringList) {
@@ -61,5 +70,7 @@ void ConsoleParser::inputFunction() {
     }
 
     // Исполняем команду из распарсенных данных
-    commandRun(command, args, pams);
+    if (commandsLibrary != nullptr){
+        commandsLibrary->runCmd(*smpbCore, command, args, pams);
+    }
 }

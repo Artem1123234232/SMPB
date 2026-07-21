@@ -1,5 +1,4 @@
 #include <QCoreApplication>
-#include <QTimer>
 
 #include <QProcess>
 #include <QFileInfo>
@@ -8,6 +7,7 @@
 #include <iostream>
 
 #include "consoleparser.h"
+#include "smpbcore.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -126,18 +126,10 @@ int main(int argc, char *argv[]) {
 
     QCoreApplication a(argc, argv);
 
-    // Настраиваем объект парсера консоли
-    ConsoleParser consoleParser;
+    SmpbCore smpbCore;
 
-    // Настраиваем таймер консоли
-    QTimer consoleTimer;
-    consoleTimer.setInterval(100);
-
-    // Подключаем таймер консоли к функции парсера консоли
-    QObject::connect(&consoleTimer, &QTimer::timeout, &consoleParser, &ConsoleParser::inputFunction);
-
-    // Запускаем таймер консоли
-    consoleTimer.start();
+    // Запуск таймеров ядра SMPB
+    smpbCore.startTimers();
 
     // Запуск цикла обработки событий Qt (без него QTimer не работает)
     return a.exec();

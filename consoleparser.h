@@ -8,6 +8,9 @@
 #include <iostream>
 #include <string>
 
+class SmpbCore;
+class CommandsLibrary;
+
 class ConsoleParser : public QObject {
     Q_OBJECT // Обязательный макрос для работы сигналов и слотов
 
@@ -15,9 +18,13 @@ public:
     // Конструктор (передаем parent для управления памятью в Qt)
     explicit ConsoleParser(QObject *parent = nullptr);
 
-    QString virtPath = "/";
+private:
+    CommandsLibrary *commandsLibrary;
+    SmpbCore *smpbCore;
 
 public slots:
-    // Объявляем функцию как СЛОТ, чтобы её мошги вызвать внешне, например из таймера
+    // Объявляем функцию как СЛОТ, чтобы её могли вызвать внешне, например из таймера
+    void connectCommandsLib(CommandsLibrary &t_commandsLibrary);
+    void connectSmpbCore(SmpbCore &t_smpbCore);
     void inputFunction();
 };
