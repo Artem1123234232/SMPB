@@ -2,3 +2,6 @@ build/
 .qtcreator/
 *.sh
 *.nix
+cpc.h
+cpc.cpp
+commands.h

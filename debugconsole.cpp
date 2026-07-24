@@ -1,9 +1,9 @@
 #include "config.h"
 
-#ifdef WORK_CONSOLE_ENABLE
-#include "workconsole.h"
+#ifdef DEBUG_CONSOLE_ENABLE
+#include "debugconsole.h"
 
-WorkConsole::WorkConsole(QObject *parent) : BaseConsole(parent) {
+DebugConsole::DebugConsole(QObject *parent) : BaseConsole(parent) {
     // Здесь можно инициализировать что-то при создании объекта
 }
 #endif

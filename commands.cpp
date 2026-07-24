@@ -1,4 +1,4 @@
-#include "commands.h"
+/*#include "commands.h"
 #include "smpbcore.h"
 
 CommandsLibrary::CommandsLibrary(QObject *parent) : QObject(parent) {
@@ -24,4 +24,4 @@ void CommandsLibrary::runCmd(SmpbCore &smpbCore, QString &command, QString &args
         return;
     }
     std::cout << "\033[31mNot \"" << command.toStdString() << "\" command found. Use \"help\" for show the command list\033[0m" << std::endl;
-}
+}*/

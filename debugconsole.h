@@ -1,6 +1,6 @@
 #include "config.h"
 
-#ifdef WORK_CONSOLE_ENABLE
+#ifdef DEBUG_CONSOLE_ENABLE
 #pragma once
 
 #include "baseconsole.h"
@@ -11,28 +11,28 @@
 #include <iostream>
 #include <string>
 
-class WorkConsole : public BaseConsole {
+class DebugConsole : public BaseConsole {
     Q_OBJECT // Обязательный макрос для работы сигналов и слотов
 
 public:
     // Конструктор (передаем parent для управления памятью в Qt)
-    explicit WorkConsole(QObject *parent = nullptr);
+    explicit DebugConsole(QObject *parent = nullptr);
 
 public slots:
     // Объявляем функцию как СЛОТ, чтобы её могли вызвать внешне, например из таймера
     QString getName() const {
-        return "WorkConsole";
+        return "DebugConsole";
     }
     virtual QString getDescription() const {
-        return "standart console";
+        return "console for debugging";
     }
 
 protected:
     QString getInputString() const { // Строка инпут, строка приветствие или как ее еще можно назвать?
-        return "[WorkConsole]$ ";
+        return "[DebugConsole]$ ";
     }
     QString getInputStringColor() const {
-        return "35m";
+        return "33m";
     }
 };
 #endif

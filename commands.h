@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include <QObject>
 #include <QString>
@@ -22,4 +22,4 @@ private:
 public slots:
     // Объявляем функцию как СЛОТ, чтобы её могли вызвать внешне, например из таймера
     void runCmd(SmpbCore &smpbCore, QString &command, QString &args, QStringList &pams);
-};
+};*/
