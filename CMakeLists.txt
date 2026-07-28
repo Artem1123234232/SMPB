@@ -28,13 +28,13 @@ add_executable(smpb
   consoleapi.h
   consoleapi.cpp
 
-  cpc.h
-  cpc.cpp
   baseconsole.h
   baseconsole.cpp
   config.h
   debugconsole.h
   debugconsole.cpp
+  baseclass.h
+  baseclass.cpp
 
 )
 target_link_libraries(smpb PRIVATE Qt${QT_VERSION_MAJOR}::Core)

@@ -11,7 +11,9 @@
 #include <iostream>
 #include <string>
 
-class SmpbCore;
+#include "baseclass.h"
+#include "config.h"
+#include "smpbcore.h"
 
 struct cmdData{
     QString command;
@@ -20,7 +22,7 @@ struct cmdData{
     bool live = false;
 };
 
-class BaseConsole : public QObject {
+class BaseConsole : public BaseClass {
     Q_OBJECT // Обязательный макрос для работы сигналов и слотов
 
 public:
@@ -28,7 +30,6 @@ public:
     explicit BaseConsole(QObject *parent = nullptr);
 
 private:
-    SmpbCore *smpbCore;
     QStringList cmdHistory = {""}; // Хранит историю команд
     int cursorX = 0;
     int cursorY = 0;
@@ -38,9 +39,9 @@ public slots:
     // Объявляем функцию как СЛОТ, чтобы её могли вызвать внешне, например из таймера
     void connectSmpbCore(SmpbCore &t_smpbCore);
     void keyProcessing(QString key);
-    void cmdHelp(cmdData &data);
-    void cmdTest(cmdData &data);
-    void runCmd(cmdData &data);
+    virtual void cmdHelp(cmdData &data);
+    virtual void cmdTest(cmdData &data);
+    virtual void runCmd(cmdData &data);
     virtual QString getName() const {
         return "BaseConsole";
     }
@@ -49,11 +50,12 @@ public slots:
     }
 
 protected:
+    SmpbCore *smpbCore = nullptr;
     virtual QString getInputString() const { // Строка инпут, строка приветствие или как ее еще можно назвать?
         return "[BaseConsole]$ ";
     }
     virtual QString getInputStringColor() const {
-        return "34m";
+        return ANSI_BLUE;
     }
 };
 #endif

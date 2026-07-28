@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QObject>
+#include "baseclass.h"
 #include <QString>
 #include <QProcess>
 #include <QFileInfo>
@@ -20,7 +20,7 @@
 #endif
 
 
-class ConsoleReader : public QObject {
+class ConsoleReader : public BaseClass {
     Q_OBJECT
 public:
     // Конструктор (передаем parent для управления памятью в Qt)
@@ -30,6 +30,12 @@ public:
     virtual ~ConsoleReader();
 
 private slots:
+public slots:
+    // Объявляем функцию как СЛОТ, чтобы её могли вызвать внешне, например из таймера
+    QString getName() const {
+        return "ConsoleReader";
+    }
+    //BaseClass* getObj(QString name);
     void onInputEvent();
 
 signals:

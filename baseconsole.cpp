@@ -6,12 +6,10 @@
 #include <QMetaObject>
 #include <QMetaProperty>    // Обязательно! Исправляет ошибку с QMetaProperty
 #include <QDebug>
-#include <climits>
 
-#include "smpbcore.h"
-
-BaseConsole::BaseConsole(QObject *parent) : QObject(parent) {
-    // Здесь можно инициализировать что-то при создании объекта
+BaseConsole::BaseConsole(QObject *parent) : BaseClass (parent) {
+    // Задаем параметры
+    setName("BaseConsole");
 }
 
 void BaseConsole::connectSmpbCore(SmpbCore &t_smpbCore){
@@ -54,14 +52,15 @@ void BaseConsole::keyProcessing(QString key){
         }
     }
 
+    cursorY = std::min<int>(std::max<int>(cursorY,0),cmdHistory.size() - 1);
     if (cursorY >= 0 && cursorY < cmdHistory.size()) cursorX = std::min<int>(std::max<int>(cursorX,0),cmdHistory[cursorY].size());
     else cursorX = 0;
-    QString cmdHistorySelected = "";
+    QString cmdHistorySelected = ANSI_RED + "IndexError" + ANSI_GREEN + " (in " + getName() + "::keyProcessing)" + ANSI_RST + ": list index out of range (cmdHistory.size() = " + QString::number(cmdHistory.size()) + ", cursorY = " + QString::number(cursorY) + ");";
     if (cursorY >= 0 && cursorY < cmdHistory.size()) {
         cmdHistorySelected = cmdHistory[cursorY];
     }
 
-    std::cout << "\r\033[2K\033[" << getInputStringColor().toStdString() << getInputString().toStdString() << "\033[0m" << cmdHistorySelected.toStdString() << "\r\033[" << std::to_string(cursorX+getInputString().size()) << "C" << std::flush;
+    std::cout << "\r\033[2K" << getInputStringColor().toStdString() << getInputString().toStdString() << "\033[0m" << cmdHistorySelected.toStdString() << "\r\033[" << std::to_string(cursorX+getInputString().size()) << "C" << std::flush;
 
     if (enter) {
         std::cout << std::endl;
@@ -106,7 +105,7 @@ cmdData BaseConsole::parseCommand(QString &commandString) {
             block = "";
         }
 
-        backslash_mode = chr == '\\';
+        backslash_mode = chr == '\\' && !backslash_mode;
     }
 
     if (commandStdStringList.size() <= 0){
@@ -135,9 +134,9 @@ cmdData BaseConsole::parseCommand(QString &commandString) {
     return data;
 }
 void BaseConsole::cmdHelp (cmdData &data){
-    std::cout << "\033[32mCommands: " << std::endl;
+    std::cout << ANSI_GREEN.toStdString() << "Commands: " << std::endl;
     std::cout << "  \"h\" or \"help\" - show the command list" << std::endl;
-    std::cout << "\033[0m" << std::flush;
+    std::cout << ANSI_RST.toStdString() << std::flush;
 }
 void BaseConsole::cmdTest (cmdData &data){
     std::cout << "Моя мама самая лучшая в мире!" << std::endl;
@@ -146,13 +145,13 @@ void BaseConsole::runCmd(cmdData &data){
     if (data.live){
         if (data.command == "help" or data.command == "h") {
             cmdHelp(data);
-            return;
         }
-        if (data.command == "test" or data.command == "tst") {
+        else if (data.command == "test" or data.command == "tst") {
             cmdTest(data);
-            return;
         }
-        std::cout << "\033[31mNot \"" << data.command.toStdString() << "\" command found. Use \"help\" for show the command list\033[0m" << std::endl;
+        else{
+            std::cout << "\033[31mNot \"" << data.command.toStdString() << "\" command found. Use \"help\" for show the command list\033[0m" << std::endl;
+        }
     }
 }
 #endif

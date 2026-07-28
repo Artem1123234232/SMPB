@@ -1,21 +1,19 @@
 #pragma once
 
+#include "baseclass.h"
+//#include "baseconsole.h"
+#include "consoleapi.h"
+
 #include <QTimer>
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <iostream>
 
-class ConsoleReader;
 class BaseConsole;
 
-class SmpbCore : public QObject {
+class SmpbCore : public BaseClass {
     Q_OBJECT // Обязательный макрос для работы сигналов и слотов
-
-    // 1. Размечаем поля для мета-системы Qt
-    //Q_PROPERTY(ConsoleReader* m_consoleReader MEMBER consoleReader)
-    //Q_PROPERTY(WorkConsole* m_workConsole MEMBER workConsole)
-    //Q_PROPERTY(CommandsLibrary* m_commandsLibrary MEMBER commandsLibrary)
 
 public:
     // Конструктор (передаем parent для управления памятью в Qt)
@@ -26,8 +24,13 @@ private:
     QList<BaseConsole*> Consoles; // Список консолей
     BaseConsole* selectedConsole = nullptr; // Выбранная консоль
     bool consoleSelectMode = false;
+    BaseClass temporaryObj;
 
 public slots:
     // Объявляем функцию как СЛОТ, чтобы её могли вызвать внешне, например из таймера
     void keyProcessing(QString key);
+    #ifdef DEBUG_FUNC_ENABLE
+    BaseClass* getObj(QString name, int pos);
+    QString descriptionFunctionsAndParameters ();
+    #endif
 };

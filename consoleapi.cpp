@@ -1,6 +1,6 @@
 #include "consoleapi.h"
 
-ConsoleReader::ConsoleReader(QObject *parent) : QObject(parent) {
+ConsoleReader::ConsoleReader(QObject *parent) : BaseClass(parent) {
     #ifdef _WIN32
     hStdin = GetStdHandle(STD_INPUT_HANDLE);
 

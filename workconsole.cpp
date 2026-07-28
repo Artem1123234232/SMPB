@@ -4,6 +4,7 @@
 #include "workconsole.h"
 
 WorkConsole::WorkConsole(QObject *parent) : BaseConsole(parent) {
-    // Здесь можно инициализировать что-то при создании объекта
+    // Задаем параметры
+    setName("WorkConsole");
 }
 #endif

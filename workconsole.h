@@ -32,7 +32,7 @@ protected:
         return "[WorkConsole]$ ";
     }
     QString getInputStringColor() const {
-        return "35m";
+        return ANSI_PURPLE;
     }
 };
 #endif
