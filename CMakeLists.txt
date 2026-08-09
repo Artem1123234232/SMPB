@@ -15,14 +15,15 @@ add_executable(smpb
   config.h
   Core/Core.h Core/Core.cpp
   Core/Config.h Core/Config.cpp
-  Core/Test3D.h Core/Test3D.cpp Core/cgltf.h
+  Core/Test3D.h Core/Test3D.cpp
+  third_party/cgltf.h
 )
 
 add_custom_command(
   TARGET smpb POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy
-          "${CMAKE_CURRENT_SOURCE_DIR}/Core/model.glb"
-          "${CMAKE_CURRENT_BINARY_DIR}/Core/model.glb"
+          "${CMAKE_CURRENT_SOURCE_DIR}/model.glb"
+          "${CMAKE_CURRENT_BINARY_DIR}/model.glb"
   COMMENT "Copying jess.glb to build directory..."
 )
 

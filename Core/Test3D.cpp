@@ -1,7 +1,7 @@
 #include "Test3D.h"
 
 #define CGLTF_IMPLEMENTATION
-#include "cgltf.h"
+#include "../third_party/cgltf.h"
 
 Test3D::Test3D() {
     // Constructor
@@ -145,13 +145,12 @@ std::vector<Triangle3D> Test3D::cube(std::array<float, 3> pos, std::array<float,
     return mesh;
 }
 
-std::vector<Triangle3D> Test3D::model(std::array<float, 3> pos, std::array<float, 3> size, std::array<float, 3> rot) {
+std::vector<Triangle3D> Test3D::model(std::array<float, 3> pos, std::array<float, 3> size, std::array<float, 3> rot, const char* file) {
     std::vector<Triangle3D> mesh;
 
     if (!model_triangles_loaded){
         cgltf_options options = {};
         cgltf_data* data = nullptr;
-        const char* file = "Core/model.glb";
 
         // 1. Парсим структуру файла
         if (cgltf_parse_file(&options, file, &data) != cgltf_result_success) {

@@ -332,7 +332,7 @@ public:
     //void drawLine(int x0, int y0, int x1, int y1, char color); // Отрисовка линии
     //void drawTriangleEdges(const Triangle &triangle, char color); // Отрисовка граней треугольника
     std::vector<Triangle3D> cube(std::array<float, 3> pos, std::array<float, 3> size, std::array<float, 3> rot = {0,0,0});
-    std::vector<Triangle3D> model(std::array<float, 3> pos, std::array<float, 3> size, std::array<float, 3> rot = {0,0,0});
+    std::vector<Triangle3D> model(std::array<float, 3> pos, std::array<float, 3> size, std::array<float, 3> rot = {0,0,0}, const char* file = "model.glb");
     void flush(); // Flush Buffer
     void sortTriangles3D(std::vector<Triangle3D>& triangles); // Функция для сортировки треугольников
     void print(float time, int width, int height); // Печать
