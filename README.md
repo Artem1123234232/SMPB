@@ -1,4 +1,4 @@
-# SMPB - Simple Memory Pool Buffer
+# SMPB - S1M Picture Buffer (for more files extensions)
 
 This is my project - an SMP buffer for data organization.
 
