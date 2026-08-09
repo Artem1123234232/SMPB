@@ -1,0 +1,25 @@
+Config constructor runned...
+Args:
+	0: ./smpb
+Test3D constructor runned...
+Core constructor runned...
+Tick #0 TPS: 24, duration: 1.4247 ms
+Tick #1 TPS: 24, duration: 1.39042 ms
+Tick #2 TPS: 24, duration: 1.88037 ms
+Tick #3 TPS: 24, duration: 2.50714 ms
+Tick #4 TPS: 24, duration: 1.13092 ms
+Tick #5 TPS: 24, duration: 1.63328 ms
+Tick #6 TPS: 24, duration: 1.31238 ms
+Tick #7 TPS: 24, duration: 1.10672 ms
+Tick #8 TPS: 24, duration: 1.80408 ms
+Tick #9 TPS: 24, duration: 1.22622 ms
+Tick #10 TPS: 24, duration: 1.78057 ms
+Tick #11 TPS: 24, duration: 1.14889 ms
+Tick #12 TPS: 24, duration: 1.51467 ms
+Tick #13 TPS: 24, duration: 1.23838 ms
+Tick #14 TPS: 24, duration: 1.41163 ms
+Tick #15 TPS: 24, duration: 2.02281 ms
+Tick #16 TPS: 24, duration: 1.74225 ms
+Tick #17 TPS: 24, duration: 1.65197 ms
+Tick #18 TPS: 24, duration: 1.50046 ms
+Tick #19 TPS: 24, duration: 1.68104 ms

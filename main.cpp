@@ -1,17 +1,25 @@
-#include <QCoreApplication>
+//#include <QCoreApplication>
 
-#include "consoleapi.h"
-#include "smpbcore.h"
+//#include "smpbcore.h"
+
+#include <iostream>
+#include <format>
+#include <cstdint>
+
+// Математика
+#include <cmath>
+
+// Ядро и его компоненты
+#include "Core/Config.h"
+#include "Core/Core.h"
+#include "Core/Test3D.h"
 
 
 int main(int argc, char *argv[]) {
-    // Инициализация консоли
-    if (!initConsole(argc, argv)) return 0;
+    Config config = Config(argc, argv);
+    Test3D test3D = Test3D();
 
-    QCoreApplication a(argc, argv);
+    Core core = Core(config, test3D);
 
-    SmpbCore smpbCore;
-
-    // Запуск цикла обработки событий Qt (без него QTimer не работает)
-    return a.exec();
+    return core.cycle();
 }
