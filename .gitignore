@@ -7,6 +7,6 @@ cpc.cpp
 commands.h
 commands.cpp
 OLD/
-result/
+result
 smpb
 log.txt
