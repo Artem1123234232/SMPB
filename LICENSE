@@ -19,3 +19,28 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Third-Party Licenses and Attributions
+
+This project includes the following third-party components:
+
+### cgltf (Single-header GLTF/GLB loader)
+- **Source**: https://github.com/jkuhlmann/cgltf
+- **License**: MIT License
+- **Copyright**: (c) 2018-2024 Johannes Kuhlmann
+- The cgltf library is distributed under the MIT License, which is fully compatible with this project's license.
+
+### "Maxwell the Cat" 3D Model (model.glb)
+- **Source**: https://sketchfab.com/3d-models/maxwell-the-cat-dingus-2ca7f3c1957847d6a145fc35de9046b0
+- **Original GMod Workshop**: https://steamcommunity.com/sharedfiles/filedetails/?id=2874462324
+- **License**: CC Attribution (Creative Commons Attribution)
+- **Attribution**: "Maxwell the Cat" by The OG Maxwell
+- **Additional Notes**: 
+  - The real cat's name is Jess
+  - The model is used in accordance with the CC Attribution license terms
+  - Any use of this model must provide appropriate credit to the original creator
+
+### Usage of Third-Party Components
+All third-party components are used in compliance with their respective licenses. The main project is licensed under MIT, while the included 3D model (model.glb) is separately licensed under CC Attribution and requires attribution as specified above.

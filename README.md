@@ -1,12 +1,22 @@
-# SMPB
-This is my project - an SMP buffer for data organization
+# SMPB - Simple Memory Pool Buffer
 
+This is my project - an SMP buffer for data organization.
 
-## License
+## Features
+- [Your features here]
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Dependencies
+- **cgltf** - Single-header GLTF/GLB loader (MIT License)
+- **model.glb** - "Maxwell the Cat" 3D model (CC Attribution)
 
-### Third-Party Licenses
-This project uses the **Qt Toolkit (v6)**. 
-* Qt Core is licensed under the GNU Lesser General Public License ([LGPL v3](https://gnu.org)).
-* Qt libraries are linked dynamically.
+## Building
+
+### Prerequisites
+- CMake 3.16 or higher
+- C++ compiler with C++23 support
+
+### Build Instructions
+```bash
+mkdir build && cd build
+cmake ..
+make
