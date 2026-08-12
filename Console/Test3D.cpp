@@ -3,9 +3,10 @@
 #define CGLTF_IMPLEMENTATION
 #include "../third_party/cgltf.h"
 
-Test3D::Test3D() {
+Test3D::Test3D(bool t_RGB) {
     // Constructor
     std::clog << "Test3D constructor runned..." << std::endl;
+    RGB = t_RGB;
 }
 Test3D::~Test3D() {
     // Destructor
@@ -19,11 +20,7 @@ uint8_t* get_buffer_pointer(const cgltf_accessor* accessor) {
     return (uint8_t*)view->buffer->data + view->offset + accessor->offset;
 }
 
-#ifdef RGB
 void Test3D::drawTriangle(const Triangle &triangle, Color color) {
-#else
-void Test3D::drawTriangle(const Triangle &triangle, char color) {
-#endif
     // Если треугольник абсолютно плоский по вертикали, рисовать нечего
     if (triangle.a.second == triangle.c.second) return;
 
@@ -66,35 +63,6 @@ void Test3D::drawTriangle(const Triangle &triangle, char color) {
     }
 }
 
-/*// Вспомогательная функция для рисования сплошной линии (Алгоритм Брезенхема)
-void Test3D::drawLine(int x0, int y0, int x1, int y1, char color) {
-    int dx = std::abs(x1 - x0);
-    int dy = std::abs(y1 - y0);
-    int sx = (x0 < x1) ? 1 : -1;
-    int sy = (y0 < y1) ? 1 : -1;
-    int err = dx - dy;
-
-    while (true) {
-        // Проверка выхода за границы буфера по Y и X
-        if (y0 >= 0 && y0 < (int)buffer.size()) {
-            if (x0 >= 0 && x0 < (int)buffer[y0].size()) {
-                buffer[y0][x0] = color;
-            }
-        }
-
-        if (x0 == x1 && y0 == y1) break;
-        int e2 = 2 * err;
-        if (e2 > -dy) { err -= dy; x0 += sx; }
-        if (e2 <  dx) { err += dx; y0 += sy; }
-    }
-}
-
-// Основная функция: просто соединяем три точки
-void Test3D::drawTriangleEdges(const Triangle &triangle, char color) {
-    drawLine(triangle.a.first, triangle.a.second, triangle.b.first, triangle.b.second, color);
-    drawLine(triangle.b.first, triangle.b.second, triangle.c.first, triangle.c.second, color);
-    drawLine(triangle.c.first, triangle.c.second, triangle.a.first, triangle.a.second, color);
-}*/
 
 std::vector<Triangle3D> Test3D::cube(std::array<float, 3> pos, std::array<float, 3> size, std::array<float, 3> rot) {
     std::vector<Triangle3D> mesh;
@@ -242,62 +210,56 @@ std::vector<Triangle3D> Test3D::model(std::array<float, 3> pos, std::array<float
     return mesh;
 }
 
-void Test3D::flush() {
-    // Flush Buffer
-#ifdef RGB
+void Test3D::writeTo(std::vector<std::string>* stringsBuffer){
+    // Write to buffer
     for (const auto& row : buffer) {
-        const Color* ocol = nullptr;
         std::string string_row = "";
+        const Color* ocol = nullptr;
         for (const auto& col : row) {
-            if (!ocol || col != *ocol) {
-                string_row += std::format("\033[48;2;{};{};{}m", col[0], col[1], col[2]);
+            if (RGB) {
+                if (!ocol || col != *ocol) {
+                    string_row += std::format("\033[48;2;{};{};{}m", col[0], col[1], col[2]);
+                }
+                string_row += " ";
             }
-            string_row += " ";
+            else {
+                float b = std::min(std::max((col[0] + col[1] + col[2]) / 255.0f / 3.0f, 0.0f), 1.0f);
+                char s = PALETTE[int( (PALETTE.size() - 1.0f) * b )];
+                string_row += s;
+
+            }
             ocol = &col;
         }
-        string_row += "\033[0m\n";
-        std::cout.write(string_row.data(), string_row.size());
-        //std::cout << string_row;
+        string_row += "\033[0m";
+        stringsBuffer->emplace_back(std::move(string_row));
     }
-#else
-    for (const auto& row : buffer) {
-        std::cout.write(row.data(), row.size());
-        std::cout << '\n';
-    }
-#endif
-    std::cout << std::flush;
 }
 
 void Test3D::sortTriangles3D(std::vector<Triangle3D>& triangles) {
     std::sort(triangles.begin(), triangles.end(), [this](const Triangle3D& a, const Triangle3D& b) {
-        return a.getMaxZView(camera) > b.getMaxZView(camera); // От большого Z к меньшему
+        return a.getZView(camera) > b.getZView(camera); // От большого Z к меньшему
     });
 }
 
-void Test3D::print(float time, int width, int height) {
+void Test3D::calc_buffer(float time, int width, int height) {
+    if (width <= 0 || height <= 0) {
+        std::cerr << "Error (Test3D::calc_buffer): invalid width or height" << std::endl;
+        return;
+    }
+
     if (width != old_width || height != old_height){
-#ifdef RGB
         buffer.assign(height, std::vector<Color>(width, {0, 0, 0}));
-#else
-        buffer.assign(height, std::vector<char>(width, ' '));
-#endif
     }
     else {
-#ifdef RGB
         for (auto& row : buffer) {
             std::fill(row.begin(), row.end(), Color{0, 0, 0});
         }
-#else
-        for (auto& row : buffer) {
-            std::fill(row.begin(), row.end(), ' ');
-        }
-#endif
     }
 
     std::array<float, 3> light = {0,1,0};
     float beta = std::fmod(time * 90.0f, 360.0f);
 
-    std::vector<Triangle3D> mesh = model({0.0f, -0.45f, 1.25f}, {0.05f, 0.05f, 0.05f}, {beta, 0.0f, -90.0f});
+    std::vector<Triangle3D> mesh = model({0.0f, -0.45f, 1.25f}, {0.05f, 0.05f, 0.05f}, {beta - 90.0f - 22.5f - 11.25f, 0.0f, -90.0f});
 
     sortTriangles3D(mesh); // Сортируем для более-менее правильной отрисовки, но у нас тут ленивый метод
 
@@ -305,25 +267,11 @@ void Test3D::print(float time, int width, int height) {
         Triangle triangle = t3d.get2D(camera, width, height, light);
 
         if (!triangle.life) continue;
-#ifdef RGB
-        uint8_t c = triangle.blight * 255;
-        Color s = {c, c, c};
-#else
-        char s = PALETTE[std::max(int( (PALETTE.size() - 1.0f) * triangle.blight ), 1)];
-#endif
+        float b = triangle.blight;
+        Color s = t3d.getColor();
+        s = {s[0]*b, s[1]*b, s[2]*b};
         drawTriangle(triangle, s);
     }
 
     old_width = width; old_height = height;
-    flush();
 }
-
-
-void Test3D::tick(long long tickCounter, int ticksPerSecond) {
-    //int sx = 8; int sy = 17;
-    int sx = 29; int sy = 57;
-    int height = 50;
-    int width =  height * sy / sx;
-    print((float) tickCounter / (float) ticksPerSecond, width, height);
-}
-

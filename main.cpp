@@ -12,14 +12,14 @@
 // Ядро и его компоненты
 #include "Core/Config.h"
 #include "Core/Core.h"
-#include "Core/Test3D.h"
+#include "Console/TuiMenu.h"
 
 
 int main(int argc, char *argv[]) {
     Config config = Config(argc, argv);
-    Test3D test3D = Test3D();
+    TuiMenu tuiMenu = TuiMenu();
 
-    Core core = Core(config, test3D);
+    Core core = Core(config, tuiMenu);
 
     return core.cycle();
 }

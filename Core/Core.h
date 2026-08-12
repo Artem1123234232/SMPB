@@ -10,19 +10,22 @@
 #include <thread>
 #include <chrono>
 
+// Для отображения нагрузки процессора
+#include <iomanip>
+
 class Config; // Core configuraton component
-class Test3D; // 3D test component
+class TuiMenu; // 3D test component
 
 class Core
 {
 public:
-    Core(Config &t_config, Test3D &t_test3D); // Constructor
+    Core(Config &t_config, TuiMenu &t_tuiMenu); // Constructor
     ~Core(); // Destructor
     int tick(); // One tick
     int cycle(); // Run cycle
 private:
     Config* m_config; // Core configuraton component
-    Test3D* m_test3D; // 3D test component
+    TuiMenu* m_tuiMenu; // 3D test component
 
     // By this bool == true, cycle running
     bool work = true;

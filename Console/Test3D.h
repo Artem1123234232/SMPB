@@ -5,6 +5,7 @@
 #include <iostream>
 #include <format>
 #include <utility>
+#include <map>
 #include <array>
 #include <vector>
 #include <algorithm>
@@ -12,19 +13,10 @@
 // Для математики
 #include <cmath>
 #include <cfloat> // Для FLT_MAX
-
-#define RGB // Включение RGB режима
+#include <climits> // Для INT_MAX
 
 // Константа для перевода градусов в радианы
 const float DEG_TO_RAD = 3.1415926535f / 180.0f;
-
-// Консольная палитра
-#ifndef RGB
-//const std::string PALETTE = " .:!/r(l1Z4H9W8$@";
-//const std::string PALETTE = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
-const std::string PALETTE = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$#FX%WM&8@KOB0S523456789";
-#endif
-
 const float DIS_TO_BLIGHT_COFF = 1.0f / 5.0f;
 
 // Цвета это три значения от 0 до 255
@@ -40,70 +32,67 @@ struct Camera{
     std::pair<float, float> rot;
     float fov;
     float f;
+
+    std::map<std::array<float, 3>, std::array<float, 3>> dotViewCach;
+
     Camera(float t_fov, std::array<float, 3> t_pos = {0.0f, 0.0f, 0.0f}, std::pair<float, float> t_rot = {0.0f, 0.0f}){
         pos = t_pos; rot = t_rot; fov = t_fov;
         f = 1.0f / std::tan((fov * DEG_TO_RAD) / 2.0f);
     }
-    float getZView(std::array<float, 3> dot){
-        // 1. Смещение относительно камеры
-        float x_local = dot[0] - pos[0];
-        float y_local = dot[1] - pos[1];
-        float z_local = dot[2] - pos[2];
+    Point2D projectGet(std::array<float, 3> dot, int width, int height, bool onlyWrite = false) {
+        std::array<float, 3> view = {0, 0, 1};
+        if (!dotViewCach.contains(dot)) {
+            // 1. Смещение относительно камеры
+            float x_local = dot[0] - pos[0];
+            float y_local = dot[1] - pos[1];
+            float z_local = dot[2] - pos[2];
 
-        // Переводим углы в радианы
-        float pitch = rot.first * DEG_TO_RAD;
-        float yaw = rot.second * DEG_TO_RAD;
+            // Переводим углы в радианы
+            float pitch = rot.first * DEG_TO_RAD;
+            float yaw = rot.second * DEG_TO_RAD;
 
-        float cos_p = std::cos(pitch), sin_p = std::sin(pitch);
-        float cos_y = std::cos(yaw),   sin_y = std::sin(yaw);
+            float cos_p = std::cos(pitch), sin_p = std::sin(pitch);
+            float cos_y = std::cos(yaw),   sin_y = std::sin(yaw);
 
-        // 2. Стандартный инвертированный поворот камеры (Камера смотрит вдоль +Z при yaw=0, pitch=0)
-        // Поворот вокруг оси Y (Yaw)
-        float z_rot1 = sin_y * x_local + cos_y * z_local;
+            // 2. Стандартный инвертированный поворот камеры (Камера смотрит вдоль +Z при yaw=0, pitch=0)
+            // Поворот вокруг оси Y (Yaw)
+            float x_rot = cos_y * x_local - sin_y * z_local;
+            float z_rot1 = sin_y * x_local + cos_y * z_local;
 
-        // Поворот вокруг оси X (Pitch)
-        float z_view = -sin_p * y_local + cos_p * z_rot1;
+            // Поворот вокруг оси X (Pitch)
+            float y_view = cos_p * y_local + sin_p * z_rot1;
+            float z_view = -sin_p * y_local + cos_p * z_rot1;
+            float x_view = x_rot;
+            view = {x_view, y_view, z_view};
+            dotViewCach[dot] = view;
+        }
+        else {
+            view = dotViewCach[dot];
+        }
 
-        return z_view;
-    }
-    Point2D projectGet(std::array<float, 3> dot, int width, int height) {
-        // 1. Смещение относительно камеры
-        float x_local = dot[0] - pos[0];
-        float y_local = dot[1] - pos[1];
-        float z_local = dot[2] - pos[2];
-
-        // Переводим углы в радианы
-        float pitch = rot.first * DEG_TO_RAD;
-        float yaw = rot.second * DEG_TO_RAD;
-
-        float cos_p = std::cos(pitch), sin_p = std::sin(pitch);
-        float cos_y = std::cos(yaw),   sin_y = std::sin(yaw);
-
-        // 2. Стандартный инвертированный поворот камеры (Камера смотрит вдоль +Z при yaw=0, pitch=0)
-        // Поворот вокруг оси Y (Yaw)
-        float x_rot = cos_y * x_local - sin_y * z_local;
-        float z_rot1 = sin_y * x_local + cos_y * z_local;
-
-        // Поворот вокруг оси X (Pitch)
-        float y_view = cos_p * y_local + sin_p * z_rot1;
-        float z_view = -sin_p * y_local + cos_p * z_rot1;
-        float x_view = x_rot;
+        if (onlyWrite) {
+            return {-1, -1, -1};
+        }
 
         // Проверка отсечения (теперь всё, что перед камерой по оси Z, будет иметь z_view > 0)
-        if (z_view <= 0.001f) {
-            return {-1, -1};
+        if (view[2] <= 0.001f) {
+            return {-1, -1, -1};
         }
 
         // 3. Перспективная проекция
         float aspect = static_cast<float>(width) / static_cast<float>(height);
-        float x_ndc = (x_view * f) / (z_view * aspect);
-        float y_ndc = (y_view * f) / z_view;
+        float x_ndc = (view[0] * f) / (view[2] * aspect);
+        float y_ndc = (view[1] * f) / view[2];
 
         // 4. Экранные координаты
         int x_screen = static_cast<int>((x_ndc + 1.0f) / 2.0f * width);
         int y_screen = static_cast<int>((1.0f - y_ndc) / 2.0f * height);
 
-        return Point2D{x_screen, y_screen, z_view};
+        return Point2D{x_screen, y_screen, view[2]};
+    }
+    float getZView(std::array<float, 3> dot){
+        projectGet(dot, 0.0f, 0.0f, true);
+        return dotViewCach[dot][2];
     }
 };
 
@@ -131,13 +120,13 @@ struct Triangle3D {
     std::array<float, 3> b;
     std::array<float, 3> c;
 
-    Triangle3D(std::array<float, 3> t_a, std::array<float, 3> t_b, std::array<float, 3> t_c) {
-        a = t_a; b = t_b; c = t_c;
+    Triangle3D(std::array<float, 3> t_a, std::array<float, 3> t_b, std::array<float, 3> t_c)
+        : a(t_a), b(t_b), c(t_c) {
         sortVertices(); // Автоматически упорядочиваем вершины при создании
     }
 
-    float getMaxZView(Camera &camera) const{
-        return std::max(camera.getZView(a), std::max(camera.getZView(b), camera.getZView(c)));
+    float getZView(Camera &camera) const{
+        return (camera.getZView(a), camera.getZView(b), camera.getZView(c)) / 3.0f;
     }
 
     Triangle get2D(Camera &camera, int width, int height, std::array<float, 3> &light) const{
@@ -201,6 +190,11 @@ struct Triangle3D {
         }
 
         return { 0.0f, 0.0f, 0.0f }; // Дефолтный вектор для некорректного треугольника
+    }
+
+    Color getColor() const {
+        Color col = {255, 255, 255};
+        return col;
     }
 
     // 1. Вращение в плоскости XZ (вокруг оси Y)
@@ -307,13 +301,15 @@ private:
 class Test3D
 {
 private:
+    bool RGB; // Включен ли RGB режим?
+
+    // Консольная палитра
+    const std::string PALETTE = " .:!/r(l1Z4H9W8$@";
+    //const std::string PALETTE = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+    //const std::string PALETTE = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$#FX%WM&8@KOB0S523456789";
+
     int old_width = -1; int old_height = -1;
-#ifdef RGB
-    std::vector<std::vector<Color>> buffer; // Буфер консоли
-#else
-    std::vector<std::vector<char>> buffer; // Буфер консоли
-#endif
-    //std::vector<std::vector<float>> depth_buffer; // Буфер глубины
+    std::vector<std::vector<Color>> buffer; // Image buffer
 
     // Модель
     bool model_triangles_loaded = false; // Пока не загружена...
@@ -321,22 +317,15 @@ private:
 
     Camera camera = Camera(60.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}); // Камера
 public:
-    Test3D(); // Constructor
+    Test3D(bool t_RGB = false); // Constructor
     ~Test3D(); // Destructor
     void print_data3d(); // Печать данных 3д модели
-#ifdef RGB
-    void drawTriangle(const Triangle &triangle, Color = {255, 255, 255}); // Отрисовка треугольника
-#else
-    void drawTriangle(const Triangle &triangle, char color = '@'); // Отрисовка треугольника
-#endif
-    //void drawLine(int x0, int y0, int x1, int y1, char color); // Отрисовка линии
-    //void drawTriangleEdges(const Triangle &triangle, char color); // Отрисовка граней треугольника
+    void drawTriangle(const Triangle &triangle, Color = {255, 255, 255}); // Draw triangle to buffer
     std::vector<Triangle3D> cube(std::array<float, 3> pos, std::array<float, 3> size, std::array<float, 3> rot = {0,0,0});
     std::vector<Triangle3D> model(std::array<float, 3> pos, std::array<float, 3> size, std::array<float, 3> rot = {0,0,0}, const char* file = "model.glb");
-    void flush(); // Flush Buffer
-    void sortTriangles3D(std::vector<Triangle3D>& triangles); // Функция для сортировки треугольников
-    void print(float time, int width, int height); // Печать
-    void tick(long long tickCounter, int ticksPerSecond); // Тик
+    void writeTo(std::vector<std::string>* stringsBuffer); // Write to string buffer
+    void sortTriangles3D(std::vector<Triangle3D>& triangles); // Function for triangles sort
+    void calc_buffer(float time, int width, int height); // Calc data to buffer
 };
 
 #endif // TEST3D_H
