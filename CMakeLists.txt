@@ -12,21 +12,11 @@ set(CMAKE_CXX_STANDARD_EXTENSIONS OFF)
 add_executable(smpb
   main.cpp
 
-  third_party/cgltf.h
   Core/Core.h Core/Core.cpp
-  Core/Config.h Core/Config.cpp
-  Console/Test3D.h Console/Test3D.cpp
-  Console/TuiMenu.h Console/TuiMenu.cpp
-  Console/ConsoleApi.h
+  Core/BaseTask.h Core/BaseTask.cpp
   Core/BaseComponent.h Core/BaseComponent.cpp
-)
+  Core/Config.h Core/Config.cpp
 
-add_custom_command(
-  TARGET smpb POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy
-          "${CMAKE_CURRENT_SOURCE_DIR}/model.glb"
-          "${CMAKE_CURRENT_BINARY_DIR}/model.glb"
-  COMMENT "Copying jess.glb to build directory..."
 )
 
 include(GNUInstallDirs)

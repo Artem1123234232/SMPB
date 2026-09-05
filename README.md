@@ -1,13 +1,9 @@
-# SMPB - S1M Picture Buffer (for more files extensions)
+# SMPB
 
-This is my project - an SMP buffer for data organization.
+This is my project - an SMPB - my core, for my projects
 
 ## Features
 - [Your features here]
-
-## Dependencies
-- **cgltf** - Single-header GLTF/GLB loader (MIT License)
-- **model.glb** - "Maxwell the Cat" 3D model (CC Attribution)
 
 ## Building
 
