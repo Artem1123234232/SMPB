@@ -23,3 +23,14 @@ int BaseTask::getWorkerIdx() {
     // Get worker idx
     return workerIdx;
 }
+
+int BaseTask::setCreatorIdx(int t_creatorIdx) {
+    // Set creator idx
+    creatorIdx = t_creatorIdx;
+    return 0;
+}
+int BaseTask::setWorkerIdx(int t_workerIdx) {
+    // Set worker idx
+    workerIdx = t_workerIdx;
+    return 0;
+}

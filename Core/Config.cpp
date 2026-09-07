@@ -28,6 +28,7 @@ bool Config::isDirty() {
 }
 
 int Config::init() {
+    /*
     int errorCode = 0;
     if (core){
         errorCode = core->setTPS(getTPS());
@@ -41,4 +42,6 @@ int Config::init() {
         return -404;
     }
     return errorCode;
+    */
+    return -ENOSYS;
 }

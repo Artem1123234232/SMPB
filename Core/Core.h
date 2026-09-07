@@ -51,7 +51,7 @@ public:
 
     uint32_t getTPS() const; // Get ticks per second
     bool isDebugModeEnabled() const; // Is debug mode enabled?
-
+    
     void appendComponent(std::unique_ptr<BaseComponent> component); // Append component
     int findComponentIdxByName(std::string& name);
     int processTask(BaseTask& task); // Process task

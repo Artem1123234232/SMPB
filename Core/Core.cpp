@@ -84,6 +84,7 @@ int Core::processTask(BaseTask& task) {
         }
         return 0;
     }
+    std::cerr << "Error in Core::processTask: The creator Idx or worker Idx is outside the bounds of the component list. Creator idx: " << std::to_string(creatorIdx) << ". Worker idx: " << std::to_string(workerIdx) << std::endl;
     return -ENOENT;
 }
 
@@ -152,7 +153,7 @@ int Core::cycle(){
                   << " end; Expected TPS: " << ticksPerSecond
                   << "; Tick duration: " << duration.count() << " ms, " << duration.count() * ticksPerSecond / 1000.0f << " ticks"
                   << " (util: " << std::fixed << std::setprecision(3)
-                  << (duration.count() / 1000.0) * ticksPerSecond * 100.0 << "%)\n\n";
+                  << (duration.count() / 1000.0f) * ticksPerSecond * 100.0f << "%)\n\n";
 
         tickCounter++;
 

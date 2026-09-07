@@ -9,6 +9,9 @@
 // For errors macros
 #include <cerrno>
 
+// For unique_ptr
+#include <memory>
+
 // Core class
 class Core;
 
@@ -17,9 +20,11 @@ class BaseTask;
 
 class BaseComponent
 {
+private:
+    Core* core;
+
 protected:
     std::string componentName; // Component name
-    Core* core;
 
 public:
     BaseComponent(std::string name); // Constructor
@@ -28,6 +33,15 @@ public:
     std::string getName(); // Get component name
     int setCore(Core* t_core); // Set core
 
+    // Core api functions
+    int Core_setTPS(uint32_t tps); // Set core ticks per second
+    int Core_setDebugModeEnabled(bool n_debugModeEnabled); // Set core debug mode enabled
+    uint32_t Core_getTPS() const; // Get core ticks per second
+    bool Core_isDebugModeEnabled() const; // Is debug mode enabled in core?
+    void Core_appendComponent(std::unique_ptr<BaseComponent> component); // Append Component to core
+
+
+    int sendTask(BaseTask& task, std::string workerName); // Send task into core
     int proccessTask(BaseTask& task);
 
     virtual int init(); // Init function
