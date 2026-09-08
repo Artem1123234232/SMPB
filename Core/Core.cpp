@@ -20,27 +20,15 @@ Core::~Core() {
     // Destructor
 }
 
-bool Core::isLocked() const {
-    // Core is locked?
-    return locked;
-}
-
 int Core::setTPS(uint32_t tps) {
     // Set ticks per second
-    if (isLocked()) {
-        return -EPERM;
-    }
     ticksPerSecond = tps;
-
     // Tick duration in milliseconds
     target_duration = std::chrono::milliseconds( (ticksPerSecond > 0) ? (1000 / ticksPerSecond) : 0 );
     return 0;
 }
 int Core::setDebugModeEnabled(bool n_debugModeEnabled) {
     // Set debug mode enabled
-    if (isLocked()) {
-        return -EPERM;
-    }
     debugModeEnabled = n_debugModeEnabled;
     return 0;
 }

@@ -22,12 +22,6 @@
 // For errors macros
 #include <cerrno>
 
-enum class PermissionLevel : uint8_t {
-    None   = 0,   // No access
-    Medium = 127,  // Have acces to work with other components and lower-level rights
-    Full   = 255  // Have acces to edit core config, modify permission other components and lower-level rights
-};
-
 // Class of base task
 class BaseTask;
 
@@ -44,8 +38,6 @@ public:
     Core(const Core&) = delete;
     Core& operator=(const Core&) = delete;
 
-    bool isLocked() const; // Core is locked?
-
     int setTPS(uint32_t tps); // Set ticks per second
     int setDebugModeEnabled(bool n_debugModeEnabled); // Set debug mode enabled
 
@@ -59,9 +51,6 @@ public:
     int tick(long long tickCounter); // Tick components
     int cycle(); // Run cycle
 private:
-    // Core is locked? If false -> edit core configuration permitted
-    bool locked = false;
-
     uint32_t ticksPerSecond = 5; // Ticks per second (TPS)
     bool debugModeEnabled = false; // Debug mode for more information in console
 
