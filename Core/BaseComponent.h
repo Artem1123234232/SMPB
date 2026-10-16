@@ -37,6 +37,7 @@ public:
     // Core api functions
     int Core_setTPS(uint32_t tps); // Set core ticks per second
     int Core_setDebugModeEnabled(bool n_debugModeEnabled); // Set core debug mode enabled
+    void Core_stop(); // Stop core
     uint32_t Core_getTPS() const; // Get core ticks per second
     bool Core_isDebugModeEnabled() const; // Is debug mode enabled in core?
     void Core_appendComponent(std::unique_ptr<BaseComponent> component); // Append Component to core
@@ -47,6 +48,7 @@ public:
 
     virtual int init(); // Init function
     virtual int tick(long long tickCounter); // Tick function
+    virtual void death(); // Death function
 };
 
 #endif // BASECOMPONENT_H

@@ -33,6 +33,12 @@ int Core::setDebugModeEnabled(bool n_debugModeEnabled) {
     return 0;
 }
 
+int Core::stop() {
+    // Stop work
+    stopFlag = true;
+    return 0;
+}
+
 uint32_t Core::getTPS() const {
     // Get ticks per second
     return ticksPerSecond;
@@ -88,6 +94,7 @@ int Core::init(){
             int errorCode2 = (*it)->init();
             if (errorCode2 != 0) {
                 std::cerr << "Critical Error in Core::init: " << (*it)->getName() << "::init return error code " << std::to_string(errorCode2) << ", delete this component" << std::endl;
+                (*it)->death();
                 it = componentsList.erase(it);
             }
             else {
@@ -105,6 +112,7 @@ int Core::tick(long long tickCounter){
 
         if (errorCode != 0) {
             std::cerr << "Critical Error in Core::tick: " << (*it)->getName() << "::tick return error code " << std::to_string(errorCode) << ", delete this component" << std::endl;
+            (*it)->death();
             it = componentsList.erase(it);
         } else {
             ++it;
@@ -123,7 +131,7 @@ int Core::cycle(){
     // Position of the next tick point in time
     std::chrono::steady_clock::time_point next_tick_time = std::chrono::steady_clock::now();
 
-    while (1){
+    while (!stopFlag){
         auto start_time = std::chrono::steady_clock::now();
 
         int errorCode = tick(tickCounter);
@@ -161,6 +169,13 @@ int Core::cycle(){
 
         std::this_thread::sleep_until(next_tick_time); // Sleep
     }
-    std::clog << "Program finished cleanly." << std::endl;
+
+    // Stopping
+    for (auto it = componentsList.begin(); it != componentsList.end(); ) {
+        (*it)->death();
+        it = componentsList.erase(it);
+    }
+    stopFlag = false;
+    std::clog << "Core is stop" << std::endl;
     return 0;
 }

@@ -40,10 +40,11 @@ public:
 
     int setTPS(uint32_t tps); // Set ticks per second
     int setDebugModeEnabled(bool n_debugModeEnabled); // Set debug mode enabled
+    int stop(); // Stop work
 
     uint32_t getTPS() const; // Get ticks per second
     bool isDebugModeEnabled() const; // Is debug mode enabled?
-    
+
     void appendComponent(std::unique_ptr<BaseComponent> component); // Append component
     int findComponentIdxByName(std::string& name);
     int processTask(BaseTask& task); // Process task
@@ -53,6 +54,7 @@ public:
 private:
     uint32_t ticksPerSecond = 5; // Ticks per second (TPS)
     bool debugModeEnabled = false; // Debug mode for more information in console
+    bool stopFlag = false; // Stop flag
 
     // Tick duration in milliseconds
     std::chrono::milliseconds target_duration{200};

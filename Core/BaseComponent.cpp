@@ -38,6 +38,10 @@ int BaseComponent::Core_setDebugModeEnabled(bool n_debugModeEnabled) {
     // Set core debug mode enabled
     return(core->setDebugModeEnabled(n_debugModeEnabled));
 } 
+void BaseComponent::Core_stop() {
+    // Stop core
+    core->stop();
+}
 uint32_t BaseComponent::Core_getTPS() const {
     // Get core ticks per second
     return(core->getTPS());
@@ -73,4 +77,9 @@ int BaseComponent::tick(long long tickCounter) {
     // Tick function
     if (Core_isDebugModeEnabled()) std::clog << getPrefix() << "I\'m tick!.\n";
     return 0;
+}
+
+void BaseComponent::death() {
+    // Death function
+    if (Core_isDebugModeEnabled()) std::clog << getPrefix() << "I\'m death!\n";
 }
