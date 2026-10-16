@@ -8,14 +8,19 @@
 
 BaseComponent::BaseComponent(std::string name) : componentName(name) {
     // Constructor
-    std::clog << componentName << " constructor executed...\n";
+    std::clog << "[" << componentName << "] " << "My constructor executed!\n";
 }
 
 BaseComponent::~BaseComponent() = default; // Destructor
 
-std::string BaseComponent::getName() {
+std::string BaseComponent::getName() const {
     // Get component name
     return componentName;
+}
+
+std::string BaseComponent::getPrefix() const {
+    // Get component prefix
+    return "[" + componentName + "] ";
 }
 
 int BaseComponent::setCore(Core* t_core) {
@@ -60,18 +65,12 @@ int BaseComponent::proccessTask(BaseTask& task) {
 
 int BaseComponent::init() {
     // Init function
-    std::clog << componentName << " initialization...\n";
+    std::clog << getPrefix() << "I\'m init!\n";
     return 0;
 }
 
 int BaseComponent::tick(long long tickCounter) {
     // Tick function
-    std::clog << componentName << " tick...\n";
-    return 0;
-}
-
-int BaseComponent::reload() {
-    // Reload function
-    std::clog << componentName << " reload...\n";
+    std::clog << getPrefix() << "I\'m tick!.\n";
     return 0;
 }

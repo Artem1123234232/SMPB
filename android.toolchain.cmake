@@ -1,0 +1,8 @@
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR aarch64)
+set(CMAKE_C_COMPILER "/nix/store/7p1f8lf4p2z8shydx10hy274y8vasx82-aarch64-unknown-linux-android-ndk-toolchain-wrapper-27.0.12077973/bin/aarch64-unknown-linux-android-gcc")
+set(CMAKE_CXX_COMPILER "/nix/store/7p1f8lf4p2z8shydx10hy274y8vasx82-aarch64-unknown-linux-android-ndk-toolchain-wrapper-27.0.12077973/bin/aarch64-unknown-linux-android-g++")
+set(CMAKE_EXE_LINKER_FLAGS "-static" CACHE STRING "" FORCE)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)

@@ -30,7 +30,8 @@ public:
     BaseComponent(std::string name); // Constructor
     virtual ~BaseComponent(); // Destructor
 
-    std::string getName(); // Get component name
+    std::string getName() const; // Get component name
+    std::string getPrefix() const; // Get component prefix
     int setCore(Core* t_core); // Set core
 
     // Core api functions
@@ -46,7 +47,6 @@ public:
 
     virtual int init(); // Init function
     virtual int tick(long long tickCounter); // Tick function
-    virtual int reload(); // Reload function
 };
 
 #endif // BASECOMPONENT_H

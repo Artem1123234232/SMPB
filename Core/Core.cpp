@@ -67,7 +67,7 @@ int Core::processTask(BaseTask& task) {
     if (creatorIdx >= 0 && creatorIdx < componentsList.size() && workerIdx >= 0 && workerIdx < componentsList.size()) {
         int errorCode = componentsList[workerIdx]->proccessTask(task);
         if (errorCode != 0){
-            std::cerr << "Error in Core::processTask: " << componentsList[workerIdx]->getName() << "::processTask return error code " << std::to_string(errorCode) << ". Task from " << componentsList[creatorIdx]->getName() << " to " << componentsList[workerIdx]->getName() << " with name " << task.getName() << std::endl ;
+            std::cerr << "Error in Core::processTask: " << componentsList[workerIdx]->getName() << "::processTask return error code " << std::to_string(errorCode) << ". Task from " << componentsList[creatorIdx]->getName() << " to " << componentsList[workerIdx]->getName() << " with idx " << std::to_string(task.getIdx()) << std::endl ;
             return errorCode;
         }
         return 0;

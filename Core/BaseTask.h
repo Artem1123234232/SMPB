@@ -2,19 +2,20 @@
 #define BASETASK_H
 
 #include <string>
+#include <cstdint>
 
 class BaseTask
 {
 protected:
-    std::string taskName;
+    uint32_t taskIdx;
 
 public:
-    BaseTask(std::string t_taskName, int t_creatorIdx = -1, int t_workerIdx = -1); // Constructor
+    BaseTask(uint32_t t_taskIdx, int t_creatorIdx = -1, int t_workerIdx = -1); // Constructor
     virtual ~BaseTask(); // Destructor
 
-    std::string getName(); // Get task name
-    int getCreatorIdx(); // Get creator idx
-    int getWorkerIdx(); // Get worker idx
+    uint32_t getIdx() const; // Get task idx
+    int getCreatorIdx() const; // Get creator idx
+    int getWorkerIdx() const; // Get worker idx
 
     int setCreatorIdx(int t_creatorIdx); // Set creator idx
     int setWorkerIdx(int t_workerIdx); // Set worker idx

@@ -11,7 +11,8 @@ set(CMAKE_CXX_STANDARD_EXTENSIONS OFF)
 
 add_executable(smpb
   main.cpp
-
+  AndroidFix.cpp
+  
   Core/Core.h Core/Core.cpp
   Core/BaseTask.h Core/BaseTask.cpp
   Core/BaseComponent.h Core/BaseComponent.cpp

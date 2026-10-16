@@ -3,23 +3,23 @@
 // Core class
 #include "Core.h"
 
-BaseTask::BaseTask(std::string t_taskName, int t_creatorIdx, int t_workerIdx)
- : taskName(t_taskName), creatorIdx(t_creatorIdx), workerIdx(t_workerIdx) {
+BaseTask::BaseTask(uint32_t t_taskIdx, int t_creatorIdx, int t_workerIdx)
+ : taskIdx(t_taskIdx), creatorIdx(t_creatorIdx), workerIdx(t_workerIdx) {
     // Constructor
 }
 
 BaseTask::~BaseTask() = default; // Destructor
 
-std::string BaseTask::getName() {
-    // Get task name
-    return taskName;
+uint32_t BaseTask::getIdx() const {
+    // Get task idx
+    return taskIdx;
 }
 
-int BaseTask::getCreatorIdx() {
+int BaseTask::getCreatorIdx() const {
     // Get creator idx
     return creatorIdx;
 }
-int BaseTask::getWorkerIdx() {
+int BaseTask::getWorkerIdx() const {
     // Get worker idx
     return workerIdx;
 }
