@@ -137,11 +137,13 @@ int Core::cycle(){
 
         std::chrono::duration<double, std::milli> duration = end_time - start_time;
 
-        std::clog << "Tick #" << tickCounter
-                  << " end; Expected TPS: " << ticksPerSecond
-                  << "; Tick duration: " << duration.count() << " ms, " << duration.count() * ticksPerSecond / 1000.0f << " ticks"
-                  << " (util: " << std::fixed << std::setprecision(3)
-                  << (duration.count() / 1000.0f) * ticksPerSecond * 100.0f << "%)\n\n";
+        if (debugModeEnabled) {
+            std::clog << "Tick #" << tickCounter
+                    << " end; Expected TPS: " << ticksPerSecond
+                    << "; Tick duration: " << duration.count() << " ms, " << duration.count() * ticksPerSecond / 1000.0f << " ticks"
+                    << " (util: " << std::fixed << std::setprecision(3)
+                    << (duration.count() / 1000.0f) * ticksPerSecond * 100.0f << "%)\n\n";
+        }
 
         tickCounter++;
 

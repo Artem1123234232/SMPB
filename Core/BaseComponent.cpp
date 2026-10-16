@@ -65,12 +65,12 @@ int BaseComponent::proccessTask(BaseTask& task) {
 
 int BaseComponent::init() {
     // Init function
-    std::clog << getPrefix() << "I\'m init!\n";
+    if (Core_isDebugModeEnabled()) std::clog << getPrefix() << "I\'m init!\n";
     return 0;
 }
 
 int BaseComponent::tick(long long tickCounter) {
     // Tick function
-    std::clog << getPrefix() << "I\'m tick!.\n";
+    if (Core_isDebugModeEnabled()) std::clog << getPrefix() << "I\'m tick!.\n";
     return 0;
 }
