@@ -3,26 +3,6 @@
 // Core class
 #include "Core.h"
 
-// For read files
-#include <fstream>
-
-static std::pair<std::vector<char>, int> readFile(const std::string& filename) {
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open()) {
-        return {{}, ENOENT};
-    }
-
-    size_t fileSize = static_cast<size_t>(file.tellg());
-    std::vector<char> buffer(fileSize);
-
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-    file.close();
-
-    return {buffer, 0};
-}
-
 Config::Config(int argc, char *argv[]) : BaseComponent("Config") {
     // Constructor
     std::clog << "Args:" << std::endl;
@@ -35,34 +15,7 @@ Config::Config(int argc, char *argv[]) : BaseComponent("Config") {
     }
 }
 
-uint32_t Config::getTPS() {
-    return(ticksPerSecond);
-}
-
-bool Config::isDirty() {
-    if (dirty){
-        dirty = false;\
-        return true;
-    }
-    return false;
-}
-
 int Config::init() {
-    /*
-    int errorCode = 0;
-    if (core){
-        errorCode = core->setTPS(getTPS());
-        if (errorCode == -EPERM) {
-            std::cerr << "Critical Error: Config::init insufficient privileges to apply the configuration" << std::endl;
-            return errorCode;
-        }
-    }
-    else if (errorCode != 0) {
-        std::cerr << "Critical Error: Config::init core is nullptr" << std::endl;
-        return -404;
-    }
-    return errorCode;
-    */
     auto config = readFile("core.config");
 
     switch (config.second) {

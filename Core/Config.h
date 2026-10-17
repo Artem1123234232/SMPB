@@ -8,12 +8,13 @@
 #include <iostream>
 #include <format>
 
+// For file reading
+#include "tools.h"
+
 class Config: public BaseComponent
 {
 public:
     Config(int argc, char *argv[]);
-    uint32_t getTPS();
-    bool isDirty();
     int init() override;
 private:
     bool dirty = true;

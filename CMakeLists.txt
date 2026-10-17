@@ -16,6 +16,7 @@ add_executable(smpb
   Core/Core.h Core/Core.cpp
   Core/BaseTask.h Core/BaseTask.cpp
   Core/BaseComponent.h Core/BaseComponent.cpp
+  Core/tools.h Core/tools.cpp
   Core/Config.h Core/Config.cpp
 
 )
