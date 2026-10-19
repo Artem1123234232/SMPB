@@ -66,19 +66,21 @@ int Core::findComponentIdxByName(std::string& name) {
     return -1; 
 }
 
-int Core::processTask(BaseTask& task) {
+int Core::processTask(std::unique_ptr<BaseTask> task) {
     // Process task
-    int creatorIdx = task.getCreatorIdx();
-    int workerIdx = task.getWorkerIdx();
-    if (creatorIdx >= 0 && creatorIdx < componentsList.size() && workerIdx >= 0 && workerIdx < componentsList.size()) {
-        int errorCode = componentsList[workerIdx]->proccessTask(task);
+    int creatorIdx = task->getCreatorIdx();
+    int workerIdx = task->getWorkerIdx();
+    uint32_t taskIdx = task->getIdx();
+    const int n = static_cast<int>(componentsList.size());
+if (creatorIdx >= 0 && creatorIdx < n && workerIdx >= 0 && workerIdx < n) {
+        int errorCode = componentsList[workerIdx]->proccessTask(std::move(task));
         if (errorCode != 0){
-            std::cerr << "Error in Core::processTask: " << componentsList[workerIdx]->getName() << "::processTask return error code " << std::to_string(errorCode) << ". Task from " << componentsList[creatorIdx]->getName() << " to " << componentsList[workerIdx]->getName() << " with idx " << std::to_string(task.getIdx()) << std::endl ;
+            std::cerr << "Error in Core::processTask: " << componentsList[workerIdx]->getName() << "::processTask return error code " << errorCode << ". Task from " << componentsList[creatorIdx]->getName() << " to " << componentsList[workerIdx]->getName() << " with idx " << taskIdx << std::endl;
             return errorCode;
         }
         return 0;
     }
-    std::cerr << "Error in Core::processTask: The creator Idx or worker Idx is outside the bounds of the component list. Creator idx: " << std::to_string(creatorIdx) << ". Worker idx: " << std::to_string(workerIdx) << std::endl;
+    std::cerr << "Error in Core::processTask: The creator Idx or worker Idx is outside the bounds of the component list. Creator idx: " << creatorIdx << ". Worker idx: " << workerIdx << std::endl;
     return -ENOENT;
 }
 

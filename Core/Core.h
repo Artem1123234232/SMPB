@@ -47,7 +47,7 @@ public:
 
     void appendComponent(std::unique_ptr<BaseComponent> component); // Append component
     int findComponentIdxByName(std::string& name);
-    int processTask(BaseTask& task); // Process task
+    int processTask(std::unique_ptr<BaseTask> task); // Process task
     int init(); // Init components
     int tick(long long tickCounter); // Tick components
     int cycle(); // Run cycle

@@ -13,12 +13,12 @@ BaseComponent::BaseComponent(std::string name) : componentName(name) {
 
 BaseComponent::~BaseComponent() = default; // Destructor
 
-std::string BaseComponent::getName() const {
+const std::string& BaseComponent::getName() const {
     // Get component name
     return componentName;
 }
 
-std::string BaseComponent::getPrefix() const {
+const std::string BaseComponent::getPrefix() const {
     // Get component prefix
     return "[" + componentName + "] ";
 }
@@ -54,16 +54,16 @@ void BaseComponent::Core_appendComponent(std::unique_ptr<BaseComponent> componen
     // Append Component to core
     core->appendComponent(std::move(component));
 }
-int BaseComponent::sendTask(BaseTask& task, std::string workerName) {
+int BaseComponent::sendTask(std::unique_ptr<BaseTask> task, std::string workerName) {
     // Send task into core
-    task.setCreatorIdx(core->findComponentIdxByName(componentName));
-    task.setWorkerIdx(core->findComponentIdxByName(workerName));
-    return core->processTask(task);
+    if (!task) return -EINVAL;
+    task->setCreatorIdx(core->findComponentIdxByName(componentName));
+    task->setWorkerIdx(core->findComponentIdxByName(workerName));
+    return core->processTask(std::move(task));
 }
-
-int BaseComponent::proccessTask(BaseTask& task) {
+int BaseComponent::proccessTask(std::unique_ptr<BaseTask> task) {
     // Proccess task function
-    std::cerr << "Error in " << componentName << "::processTask: This function has not been initialized." << std::endl ;
+    std::cerr << getPrefix() << "Error in " << componentName << "::processTask: This function has not been initialized." << std::endl ;
     return -ENOSYS;
 }
 

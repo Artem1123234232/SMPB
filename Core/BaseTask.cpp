@@ -3,8 +3,8 @@
 // Core class
 #include "Core.h"
 
-BaseTask::BaseTask(uint32_t t_taskIdx, int t_creatorIdx, int t_workerIdx)
- : taskIdx(t_taskIdx), creatorIdx(t_creatorIdx), workerIdx(t_workerIdx) {
+BaseTask::BaseTask(uint32_t t_taskIdx)
+ : taskIdx(t_taskIdx) {
     // Constructor
 }
 

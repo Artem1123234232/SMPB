@@ -10,7 +10,7 @@ protected:
     uint32_t taskIdx;
 
 public:
-    BaseTask(uint32_t t_taskIdx, int t_creatorIdx = -1, int t_workerIdx = -1); // Constructor
+    BaseTask(uint32_t t_taskIdx); // Constructor
     virtual ~BaseTask(); // Destructor
 
     uint32_t getIdx() const; // Get task idx
@@ -21,8 +21,8 @@ public:
     int setWorkerIdx(int t_workerIdx); // Set worker idx
 
 private:
-    int creatorIdx;
-    int workerIdx;
+    int creatorIdx = -1;
+    int workerIdx = -1;
 };
 
 #endif // BASETASK_H
