@@ -24,7 +24,7 @@ int Core::setTPS(uint32_t tps) {
     // Set ticks per second
     ticksPerSecond = tps;
     // Tick duration in milliseconds
-    target_duration = std::chrono::milliseconds( (ticksPerSecond > 0) ? (1000 / ticksPerSecond) : 0 );
+    target_duration = std::chrono::duration<double, std::milli>( (ticksPerSecond > 0) ? (1000.0 / ticksPerSecond) : 0.0 );
     return 0;
 }
 int Core::setDebugModeEnabled(bool n_debugModeEnabled) {
@@ -136,9 +136,10 @@ int Core::tick(long long tickCounter){
 int Core::cycle(){
     // Run cycle
     long long tickCounter = 0;
+    skippedTicksAccumulator = 0.0;
 
     // Position of the next tick point in time
-    std::chrono::steady_clock::time_point next_tick_time = std::chrono::steady_clock::now();
+    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> next_tick_time = std::chrono::steady_clock::now();
 
     while (!stopFlag){
         auto start_time = std::chrono::steady_clock::now();
@@ -169,11 +170,17 @@ int Core::cycle(){
         auto now_time = std::chrono::steady_clock::now();
         if (now_time >= next_tick_time) {
             std::chrono::duration<double, std::milli> lag = now_time - next_tick_time;
-            double passTicks = lag.count() * ticksPerSecond / 1000.0f;
+            double passTicks = lag.count() * ticksPerSecond / 1000.0;
 
-            next_tick_time += std::chrono::duration_cast<std::chrono::steady_clock::duration>( target_duration * passTicks );
+            next_tick_time += target_duration * passTicks;
 
-            std::cerr << ANSI_YELLOW << "Warning: " << passTicks << " ticks are being skipped. Performance issues!" << ANSI_RST << "\n";
+            skippedTicksAccumulator += passTicks;
+            if (skippedTicksAccumulator >= 1.0) {
+                long long skippedTicks = static_cast<long long>(skippedTicksAccumulator);
+                skippedTicksAccumulator -= skippedTicks;
+
+                std::cerr << ANSI_YELLOW << "Warning: " << skippedTicks << " ticks are being skipped. Performance issues!" << ANSI_RST << "\n";
+            }
         }
 
         std::this_thread::sleep_until(next_tick_time); // Sleep

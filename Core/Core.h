@@ -62,7 +62,9 @@ private:
     bool stopFlag = false; // Stop flag
 
     // Tick duration in milliseconds
-    std::chrono::milliseconds target_duration{200};
+    std::chrono::duration<double, std::milli> target_duration{200.0};
+
+    double skippedTicksAccumulator = 0.0;
 
     // Components list
     std::vector<std::unique_ptr<BaseComponent>> componentsList;
