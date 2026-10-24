@@ -7,10 +7,56 @@
 // Class of base component
 #include "BaseComponent.h"
 
+#include <csignal>
+#include <exception>
+
 #define ANSI_RED "\033[31m"
 #define ANSI_GREEN "\033[32m"
 #define ANSI_YELLOW "\033[33m"
 #define ANSI_RST "\033[0m"
+
+namespace {
+
+std::atomic<int> receivedSignal{0};
+static_assert(std::atomic<int>::is_always_lock_free);
+
+void coreSignalHandler(int signal) {
+    receivedSignal.store(signal);
+    std::signal(signal, SIG_DFL);
+}
+
+class SignalHandlersGuard {
+public:
+    SignalHandlersGuard()
+        : previousSigint(std::signal(SIGINT, coreSignalHandler)),
+          previousSigterm(std::signal(SIGTERM, coreSignalHandler)) {}
+
+    ~SignalHandlersGuard() {
+        if (previousSigint != SIG_ERR) std::signal(SIGINT, previousSigint);
+        if (previousSigterm != SIG_ERR) std::signal(SIGTERM, previousSigterm);
+    }
+
+    SignalHandlersGuard(const SignalHandlersGuard&) = delete;
+    SignalHandlersGuard& operator=(const SignalHandlersGuard&) = delete;
+
+private:
+    void (*previousSigint)(int);
+    void (*previousSigterm)(int);
+};
+
+template <typename Function>
+int callComponent(const BaseComponent& component, const char* method, Function&& function) {
+    try {
+        return function();
+    } catch (const std::exception& e) {
+        std::cerr << "Critical Error in Core: " << component.getName() << "::" << method << " threw exception: " << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "Critical Error in Core: " << component.getName() << "::" << method << " threw unknown exception" << std::endl;
+    }
+    return -ENOTRECOVERABLE;
+}
+
+}
 
 Core::Core() {
     // Constructor
@@ -86,7 +132,8 @@ int Core::processTask(std::unique_ptr<BaseTask> task) {
     uint32_t taskIdx = task->getIdx();
     const int n = static_cast<int>(componentsList.size());
 if (creatorIdx >= 0 && creatorIdx < n && workerIdx >= 0 && workerIdx < n && componentsList[creatorIdx] && componentsList[workerIdx]) {
-        int errorCode = componentsList[workerIdx]->processTask(std::move(task));
+        BaseComponent& worker = *componentsList[workerIdx];
+        int errorCode = callComponent(worker, "processTask", [&] { return worker.processTask(std::move(task)); });
         if (errorCode != 0){
             std::cerr << "Error in Core::processTask: " << componentsList[workerIdx]->getName() << "::processTask return error code " << errorCode << ". Task from " << componentsList[creatorIdx]->getName() << " to " << componentsList[workerIdx]->getName() << " with idx " << taskIdx << std::endl;
             return errorCode;
@@ -113,10 +160,10 @@ int Core::processComponentsQueue(){
             componentsList.push_back(std::move(component));
             BaseComponent* initialized = componentsList.back().get();
 
-            int errorCode2 = initialized->init();
+            int errorCode2 = callComponent(*initialized, "init", [&] { return initialized->init(); });
             if (errorCode2 != 0) {
                 std::cerr << "Critical Error in Core::processComponentsQueue: " << initialized->getName() << "::init return error code " << std::to_string(errorCode2) << ", delete this component" << std::endl;
-                initialized->death();
+                callComponent(*initialized, "death", [&] { initialized->death(); return 0; });
                 componentsList.pop_back();
             }
         }
@@ -128,7 +175,7 @@ int Core::processComponentsQueue(){
 void Core::destroyComponents() {
     for (auto& component : componentsList) {
         if (!component) continue;
-        component->death();
+        callComponent(*component, "death", [&] { component->death(); return 0; });
         component.reset();
     }
     componentsList.clear();
@@ -147,11 +194,12 @@ int Core::tick(long long tickCounter){
     processComponentsQueue();
 
     for (auto it = componentsList.begin(); it != componentsList.end(); ) {
-        int errorCode = (*it)->tick(tickCounter);
+        BaseComponent& component = **it;
+        int errorCode = callComponent(component, "tick", [&] { return component.tick(tickCounter); });
 
         if (errorCode != 0) {
             std::cerr << "Critical Error in Core::tick: " << (*it)->getName() << "::tick return error code " << std::to_string(errorCode) << ", delete this component" << std::endl;
-            (*it)->death();
+            callComponent(component, "death", [&] { component.death(); return 0; });
             it = componentsList.erase(it);
         } else {
             ++it;
@@ -166,10 +214,13 @@ int Core::cycle(){
     long long tickCounter = 0;
     skippedTicksAccumulator = 0.0;
 
+    receivedSignal.store(0);
+    SignalHandlersGuard signalHandlersGuard;
+
     // Position of the next tick point in time
     std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> next_tick_time = std::chrono::steady_clock::now();
 
-    while (!stopFlag){
+    while (!stopFlag && receivedSignal.load() == 0){
         auto start_time = std::chrono::steady_clock::now();
 
         int errorCode = tick(tickCounter);
@@ -214,6 +265,9 @@ int Core::cycle(){
     }
 
     // Stopping
+    int stopSignal = receivedSignal.load();
+    if (stopSignal != 0) std::clog << "Core received signal " << stopSignal << ", stopping" << std::endl;
+
     destroyComponents();
     stopFlag = false;
     std::clog << "Core is stop" << std::endl;

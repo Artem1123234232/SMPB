@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <atomic>
 
 // For delays between processing ticks
 #include <thread>
@@ -61,7 +62,7 @@ private:
 
     uint32_t ticksPerSecond = 5; // Ticks per second (TPS)
     bool debugModeEnabled = false; // Debug mode for more information in console
-    bool stopFlag = false; // Stop flag
+    std::atomic<bool> stopFlag{false}; // Stop flag
 
     // Tick duration in milliseconds
     std::chrono::duration<double, std::milli> target_duration{200.0};
