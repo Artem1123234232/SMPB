@@ -1,8 +1,5 @@
 #include "BaseTask.h"
 
-// Core class
-#include "Core.h"
-
 BaseTask::BaseTask(uint32_t t_taskIdx)
  : taskIdx(t_taskIdx) {
     // Constructor

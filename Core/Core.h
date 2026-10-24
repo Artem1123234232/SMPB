@@ -49,13 +49,15 @@ public:
     bool isDebugModeEnabled() const; // Is debug mode enabled?
 
     void appendComponent(std::unique_ptr<BaseComponent> component); // Append component
-    int findComponentIdxByName(std::string& name);
+    int findComponentIdxByName(const std::string& name) const;
+    int findComponentIdxByPtr(const BaseComponent* component) const;
     int processTask(std::unique_ptr<BaseTask> task); // Process task
     int init(); // Init components
     int tick(long long tickCounter); // Tick components
     int cycle(); // Run cycle
 private:
     int processComponentsQueue();
+    void destroyComponents();
 
     uint32_t ticksPerSecond = 5; // Ticks per second (TPS)
     bool debugModeEnabled = false; // Debug mode for more information in console

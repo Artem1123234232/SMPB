@@ -18,6 +18,7 @@ Core::Core() {
 
 Core::~Core() {
     // Destructor
+    destroyComponents();
 }
 
 int Core::setTPS(uint32_t tps) {
@@ -50,10 +51,14 @@ bool Core::isDebugModeEnabled() const {
 
 void Core::appendComponent(std::unique_ptr<BaseComponent> component) {
     // Append Component
+    if (!component) {
+        std::cerr << "Error in Core::appendComponent: component is nullptr" << std::endl;
+        return;
+    }
     componentsQueue.push_back(std::move(component));
 }
 
-int Core::findComponentIdxByName(std::string& name) {
+int Core::findComponentIdxByName(const std::string& name) const {
     // Find component index by name
     auto it = std::find_if(componentsList.begin(), componentsList.end(),
         [&name](const std::unique_ptr<BaseComponent>& component) {
@@ -66,13 +71,21 @@ int Core::findComponentIdxByName(std::string& name) {
     return -1; 
 }
 
+int Core::findComponentIdxByPtr(const BaseComponent* component) const {
+    if (!component) return -1;
+    for (size_t i = 0; i < componentsList.size(); i++) {
+        if (componentsList[i].get() == component) return static_cast<int>(i);
+    }
+    return -1;
+}
+
 int Core::processTask(std::unique_ptr<BaseTask> task) {
     // Process task
     int creatorIdx = task->getCreatorIdx();
     int workerIdx = task->getWorkerIdx();
     uint32_t taskIdx = task->getIdx();
     const int n = static_cast<int>(componentsList.size());
-if (creatorIdx >= 0 && creatorIdx < n && workerIdx >= 0 && workerIdx < n) {
+if (creatorIdx >= 0 && creatorIdx < n && workerIdx >= 0 && workerIdx < n && componentsList[creatorIdx] && componentsList[workerIdx]) {
         int errorCode = componentsList[workerIdx]->processTask(std::move(task));
         if (errorCode != 0){
             std::cerr << "Error in Core::processTask: " << componentsList[workerIdx]->getName() << "::processTask return error code " << errorCode << ". Task from " << componentsList[creatorIdx]->getName() << " to " << componentsList[workerIdx]->getName() << " with idx " << taskIdx << std::endl;
@@ -97,18 +110,33 @@ int Core::processComponentsQueue(){
                 continue;
             }
 
-            int errorCode2 = component->init();
-            if (errorCode2 != 0) {
-                std::cerr << "Critical Error in Core::processComponentsQueue: " << component->getName() << "::init return error code " << std::to_string(errorCode2) << ", delete this component" << std::endl;
-                component->death();
-                continue;
-            }
-
             componentsList.push_back(std::move(component));
+            BaseComponent* initialized = componentsList.back().get();
+
+            int errorCode2 = initialized->init();
+            if (errorCode2 != 0) {
+                std::cerr << "Critical Error in Core::processComponentsQueue: " << initialized->getName() << "::init return error code " << std::to_string(errorCode2) << ", delete this component" << std::endl;
+                initialized->death();
+                componentsList.pop_back();
+            }
         }
     }
 
     return 0;
+}
+
+void Core::destroyComponents() {
+    for (auto& component : componentsList) {
+        if (!component) continue;
+        component->death();
+        component.reset();
+    }
+    componentsList.clear();
+
+    while (!componentsQueue.empty()) {
+        std::vector<std::unique_ptr<BaseComponent>> pending = std::move(componentsQueue);
+        componentsQueue.clear();
+    }
 }
 
 int Core::init(){
@@ -156,11 +184,10 @@ int Core::cycle(){
         std::chrono::duration<double, std::milli> duration = end_time - start_time;
 
         if (debugModeEnabled) {
-            std::clog << "Tick #" << tickCounter
-                    << " end; Expected TPS: " << ticksPerSecond
-                    << "; Tick duration: " << duration.count() << " ms, " << duration.count() * ticksPerSecond / 1000.0f << " ticks"
-                    << " (util: " << std::fixed << std::setprecision(3)
-                    << (duration.count() / 1000.0f) * ticksPerSecond * 100.0f << "%)\n\n";
+            std::clog << std::format("Tick #{} end; Expected TPS: {}; Tick duration: {:.3f} ms, {:.3f} ticks (util: {:.3f}%)\n\n",
+                tickCounter, ticksPerSecond, duration.count(),
+                duration.count() * ticksPerSecond / 1000.0,
+                duration.count() / 1000.0 * ticksPerSecond * 100.0);
         }
 
         tickCounter++;
@@ -187,11 +214,7 @@ int Core::cycle(){
     }
 
     // Stopping
-    for (auto it = componentsList.begin(); it != componentsList.end(); ) {
-        (*it)->death();
-        it = componentsList.erase(it);
-    }
-    componentsQueue.clear();
+    destroyComponents();
     stopFlag = false;
     std::clog << "Core is stop" << std::endl;
     return 0;

@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 
 project(smpb LANGUAGES CXX)
 
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 # Устанавливаем стандарт C++23
 set(CMAKE_CXX_STANDARD 23)
 # Говорим, что это обязательное требование (если не потянет — вылетит с ошибкой)
@@ -22,6 +26,12 @@ add_executable(smpb
 
 if(SMPB_ANDROID)
   target_sources(smpb PRIVATE AndroidFix.cpp)
+endif()
+
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_ok)
+if(ipo_ok)
+  set_property(TARGET smpb PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 endif()
 
 include(GNUInstallDirs)

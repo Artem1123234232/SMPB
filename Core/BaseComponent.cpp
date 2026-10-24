@@ -6,7 +6,7 @@
 // Class of base task
 #include "BaseTask.h"
 
-BaseComponent::BaseComponent(std::string name) : componentName(name) {
+BaseComponent::BaseComponent(std::string name) : componentName(std::move(name)) {
     // Constructor
     std::clog << "[" << componentName << "] " << "My constructor executed!\n";
 }
@@ -18,7 +18,7 @@ const std::string& BaseComponent::getName() const {
     return componentName;
 }
 
-const std::string BaseComponent::getPrefix() const {
+std::string BaseComponent::getPrefix() const {
     // Get component prefix
     return "[" + componentName + "] ";
 }
@@ -60,11 +60,11 @@ void BaseComponent::Core_appendComponent(std::unique_ptr<BaseComponent> componen
     if (!core) return;
     core->appendComponent(std::move(component));
 }
-int BaseComponent::sendTask(std::unique_ptr<BaseTask> task, std::string workerName) {
+int BaseComponent::sendTask(std::unique_ptr<BaseTask> task, const std::string& workerName) {
     // Send task into core
     if (!core) return -ENOSYS;
     if (!task) return -EINVAL;
-    task->setCreatorIdx(core->findComponentIdxByName(componentName));
+    task->setCreatorIdx(core->findComponentIdxByPtr(this));
     task->setWorkerIdx(core->findComponentIdxByName(workerName));
     return core->processTask(std::move(task));
 }

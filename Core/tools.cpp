@@ -1,35 +1,64 @@
 #include "tools.h"
 
+#include <cerrno>
+#include <filesystem>
+
 std::pair<std::vector<char>, int> readFile(const std::string& filename) {
+    std::error_code ec;
+    if (std::filesystem::is_directory(filename, ec)) {
+        return {{}, -EISDIR};
+    }
+
+    errno = 0;
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        return {{}, -ENOENT};
+        return {{}, errno ? -errno : -EIO};
     }
 
-    size_t fileSize = static_cast<size_t>(file.tellg());
-    std::vector<char> buffer(fileSize);
+    std::streamoff fileSize = file.tellg();
+    if (fileSize < 0) {
+        return {{}, -EIO};
+    }
+
+    std::vector<char> buffer(static_cast<size_t>(fileSize));
 
     file.seekg(0);
     file.read(buffer.data(), fileSize);
+    if (file.gcount() != fileSize) {
+        return {{}, -EIO};
+    }
     file.close();
 
-    return {buffer, 0};
+    return {std::move(buffer), 0};
 }
 
 std::pair<std::string, int> readFile_S(const std::string& filename) {
+    std::error_code ec;
+    if (std::filesystem::is_directory(filename, ec)) {
+        return {{}, -EISDIR};
+    }
+
+    errno = 0;
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        return {{}, -ENOENT};
+        return {{}, errno ? -errno : -EIO};
     }
 
-    size_t fileSize = static_cast<size_t>(file.tellg());
-    std::string buffer(fileSize, '\0');
+    std::streamoff fileSize = file.tellg();
+    if (fileSize < 0) {
+        return {{}, -EIO};
+    }
+
+    std::string buffer(static_cast<size_t>(fileSize), '\0');
 
     file.seekg(0);
-    file.read(&buffer[0], fileSize);
+    file.read(buffer.data(), fileSize);
+    if (file.gcount() != fileSize) {
+        return {{}, -EIO};
+    }
     file.close();
 
-    return {buffer, 0};
+    return {std::move(buffer), 0};
 }

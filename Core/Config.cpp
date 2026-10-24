@@ -35,7 +35,7 @@ int Config::init() {
     config.first.push_back('\n');
 
     for (char& ch: config.first) {
-        if (ch == ' ' || ch == '\n') {
+        if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
             if (p < 2) command[p] = s;
             if (!s.empty()) p++;
             s = "";

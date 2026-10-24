@@ -31,7 +31,7 @@ public:
     virtual ~BaseComponent(); // Destructor
 
     const std::string& getName() const; // Get component name
-    const std::string getPrefix() const; // Get component prefix
+    std::string getPrefix() const; // Get component prefix
     int setCore(Core* t_core); // Set core
 
     // Core api functions
@@ -43,7 +43,7 @@ public:
     void Core_appendComponent(std::unique_ptr<BaseComponent> component); // Append Component to core
 
 
-    int sendTask(std::unique_ptr<BaseTask> task, std::string workerName); // Send task into core
+    int sendTask(std::unique_ptr<BaseTask> task, const std::string& workerName); // Send task into core
     virtual int processTask(std::unique_ptr<BaseTask> task);
 
     virtual int init(); // Init function
