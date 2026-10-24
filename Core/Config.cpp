@@ -3,15 +3,13 @@
 // Core class
 #include "Core.h"
 
+#include <charconv>
+
 Config::Config(int argc, char *argv[]) : BaseComponent("Config") {
     // Constructor
     std::clog << "Args:" << std::endl;
     for (int i = 0; i < argc; i++){
         std::clog << "\t" << std::to_string(i) << ": " << argv[i] << std::endl;
-    }
-
-    if (ticksPerSecond <= 0) {
-        std::cerr << "Critical Error: Ticks per second <= 0!" << std::endl;
     }
 }
 
@@ -21,7 +19,7 @@ int Config::init() {
     switch (config.second) {
         case 0:
             break;
-        case ENOENT:
+        case -ENOENT:
             std::cerr << "Critical Error: Config::init, in readFile(\"core.config\"), file core.config not found!" << std::endl;
             break;
         default:

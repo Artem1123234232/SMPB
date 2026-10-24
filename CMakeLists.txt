@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(smpb LANGUAGES CXX)
 
-# Устанавливаем стандарт C++20
+# Устанавливаем стандарт C++23
 set(CMAKE_CXX_STANDARD 23)
 # Говорим, что это обязательное требование (если не потянет — вылетит с ошибкой)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,8 +11,7 @@ set(CMAKE_CXX_STANDARD_EXTENSIONS OFF)
 
 add_executable(smpb
   main.cpp
-  AndroidFix.cpp
-  
+
   Core/Core.h Core/Core.cpp
   Core/BaseTask.h Core/BaseTask.cpp
   Core/BaseComponent.h Core/BaseComponent.cpp
@@ -20,6 +19,10 @@ add_executable(smpb
   Core/Config.h Core/Config.cpp
 
 )
+
+if(SMPB_ANDROID)
+  target_sources(smpb PRIVATE AndroidFix.cpp)
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS smpb

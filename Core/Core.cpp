@@ -50,7 +50,7 @@ bool Core::isDebugModeEnabled() const {
 
 void Core::appendComponent(std::unique_ptr<BaseComponent> component) {
     // Append Component
-    componentsList.push_back(std::move(component));
+    componentsQueue.push_back(std::move(component));
 }
 
 int Core::findComponentIdxByName(std::string& name) {
@@ -73,7 +73,7 @@ int Core::processTask(std::unique_ptr<BaseTask> task) {
     uint32_t taskIdx = task->getIdx();
     const int n = static_cast<int>(componentsList.size());
 if (creatorIdx >= 0 && creatorIdx < n && workerIdx >= 0 && workerIdx < n) {
-        int errorCode = componentsList[workerIdx]->proccessTask(std::move(task));
+        int errorCode = componentsList[workerIdx]->processTask(std::move(task));
         if (errorCode != 0){
             std::cerr << "Error in Core::processTask: " << componentsList[workerIdx]->getName() << "::processTask return error code " << errorCode << ". Task from " << componentsList[creatorIdx]->getName() << " to " << componentsList[workerIdx]->getName() << " with idx " << taskIdx << std::endl;
             return errorCode;
@@ -84,31 +84,40 @@ if (creatorIdx >= 0 && creatorIdx < n && workerIdx >= 0 && workerIdx < n) {
     return -ENOENT;
 }
 
-int Core::init(){
-    for (auto it = componentsList.begin(); it != componentsList.end(); ) {
-        int errorCode1 = (*it)->setCore(this);
+int Core::processComponentsQueue(){
+    while (!componentsQueue.empty()) {
+        std::vector<std::unique_ptr<BaseComponent>> pending = std::move(componentsQueue);
+        componentsQueue.clear();
 
-        if (errorCode1 != 0) {
-            std::cerr << "Critical Error in Core::init: " << (*it)->getName() << "::setCore return error code " << std::to_string(errorCode1) << ", delete this component" << std::endl;
-            it = componentsList.erase(it);
-        }
-        else {
-            int errorCode2 = (*it)->init();
+        for (auto& component : pending) {
+            int errorCode1 = component->setCore(this);
+
+            if (errorCode1 != 0) {
+                std::cerr << "Critical Error in Core::processComponentsQueue: " << component->getName() << "::setCore return error code " << std::to_string(errorCode1) << ", delete this component" << std::endl;
+                continue;
+            }
+
+            int errorCode2 = component->init();
             if (errorCode2 != 0) {
-                std::cerr << "Critical Error in Core::init: " << (*it)->getName() << "::init return error code " << std::to_string(errorCode2) << ", delete this component" << std::endl;
-                (*it)->death();
-                it = componentsList.erase(it);
+                std::cerr << "Critical Error in Core::processComponentsQueue: " << component->getName() << "::init return error code " << std::to_string(errorCode2) << ", delete this component" << std::endl;
+                component->death();
+                continue;
             }
-            else {
-                ++it;
-            }
+
+            componentsList.push_back(std::move(component));
         }
     }
 
     return 0;
 }
 
+int Core::init(){
+    return processComponentsQueue();
+}
+
 int Core::tick(long long tickCounter){
+    processComponentsQueue();
+
     for (auto it = componentsList.begin(); it != componentsList.end(); ) {
         int errorCode = (*it)->tick(tickCounter);
 
@@ -126,8 +135,6 @@ int Core::tick(long long tickCounter){
 
 int Core::cycle(){
     // Run cycle
-    bool error = false;
-
     long long tickCounter = 0;
 
     // Position of the next tick point in time
@@ -177,6 +184,7 @@ int Core::cycle(){
         (*it)->death();
         it = componentsList.erase(it);
     }
+    componentsQueue.clear();
     stopFlag = false;
     std::clog << "Core is stop" << std::endl;
     return 0;

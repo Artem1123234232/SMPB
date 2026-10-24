@@ -21,7 +21,7 @@ class BaseTask;
 class BaseComponent
 {
 private:
-    Core* core;
+    Core* core = nullptr;
 
 protected:
     std::string componentName; // Component name
@@ -44,7 +44,7 @@ public:
 
 
     int sendTask(std::unique_ptr<BaseTask> task, std::string workerName); // Send task into core
-    virtual int proccessTask(std::unique_ptr<BaseTask> task);
+    virtual int processTask(std::unique_ptr<BaseTask> task);
 
     virtual int init(); // Init function
     virtual int tick(long long tickCounter); // Tick function

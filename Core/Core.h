@@ -5,6 +5,9 @@
 #include <iostream>
 #include <format>
 #include <cstdint>
+#include <string>
+#include <vector>
+#include <algorithm>
 
 // For delays between processing ticks
 #include <thread>
@@ -52,6 +55,8 @@ public:
     int tick(long long tickCounter); // Tick components
     int cycle(); // Run cycle
 private:
+    int processComponentsQueue();
+
     uint32_t ticksPerSecond = 5; // Ticks per second (TPS)
     bool debugModeEnabled = false; // Debug mode for more information in console
     bool stopFlag = false; // Stop flag
@@ -61,6 +66,7 @@ private:
 
     // Components list
     std::vector<std::unique_ptr<BaseComponent>> componentsList;
+    std::vector<std::unique_ptr<BaseComponent>> componentsQueue;
     //std::vector<std::vector<std::unique_ptr<BaseTask>>> componentsTasksList;
 };
 

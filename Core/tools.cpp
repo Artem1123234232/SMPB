@@ -4,7 +4,7 @@ std::pair<std::vector<char>, int> readFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        return {{}, ENOENT};
+        return {{}, -ENOENT};
     }
 
     size_t fileSize = static_cast<size_t>(file.tellg());
@@ -21,7 +21,7 @@ std::pair<std::string, int> readFile_S(const std::string& filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        return {{}, ENOENT};
+        return {{}, -ENOENT};
     }
 
     size_t fileSize = static_cast<size_t>(file.tellg());

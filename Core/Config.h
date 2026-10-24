@@ -16,9 +16,6 @@ class Config: public BaseComponent
 public:
     Config(int argc, char *argv[]);
     int init() override;
-private:
-    bool dirty = true;
-    uint32_t ticksPerSecond = 24;
 };
 
 #endif // CONFIG_H

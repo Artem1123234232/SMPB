@@ -1,7 +1,19 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
-set(CMAKE_C_COMPILER "/nix/store/7p1f8lf4p2z8shydx10hy274y8vasx82-aarch64-unknown-linux-android-ndk-toolchain-wrapper-27.0.12077973/bin/aarch64-unknown-linux-android-gcc")
-set(CMAKE_CXX_COMPILER "/nix/store/7p1f8lf4p2z8shydx10hy274y8vasx82-aarch64-unknown-linux-android-ndk-toolchain-wrapper-27.0.12077973/bin/aarch64-unknown-linux-android-g++")
+set(SMPB_ANDROID ON)
+
+set(ANDROID_TOOLCHAIN_DIR "$ENV{ANDROID_TOOLCHAIN_DIR}" CACHE PATH "")
+list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES ANDROID_TOOLCHAIN_DIR)
+
+find_program(ANDROID_C_COMPILER aarch64-unknown-linux-android-gcc HINTS "${ANDROID_TOOLCHAIN_DIR}" PATH_SUFFIXES bin)
+find_program(ANDROID_CXX_COMPILER aarch64-unknown-linux-android-g++ HINTS "${ANDROID_TOOLCHAIN_DIR}" PATH_SUFFIXES bin)
+
+if(NOT ANDROID_C_COMPILER OR NOT ANDROID_CXX_COMPILER)
+  message(FATAL_ERROR "aarch64-unknown-linux-android-gcc/g++ not found. Add the toolchain to PATH or set ANDROID_TOOLCHAIN_DIR (-DANDROID_TOOLCHAIN_DIR=... or environment variable).")
+endif()
+
+set(CMAKE_C_COMPILER "${ANDROID_C_COMPILER}")
+set(CMAKE_CXX_COMPILER "${ANDROID_CXX_COMPILER}")
 set(CMAKE_EXE_LINKER_FLAGS "-static" CACHE STRING "" FORCE)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
