@@ -6,6 +6,7 @@
 
 - [Возможности](#возможности)
 - [Сборка](#сборка)
+- [Подключение к другому проекту](#подключение-к-другому-проекту)
 - [Запуск](#запуск)
 - [Файл конфигурации `core.config`](#файл-конфигурации-coreconfig)
 - [Архитектура](#архитектура)
@@ -31,13 +32,14 @@
 - Штатная остановка по `Ctrl+C` (`SIGINT`) и `SIGTERM`: у всех компонентов вызывается `death()`.
 - Настройка через текстовый файл `core.config`.
 - Режим отладки с подробным логом каждого тика.
+- Ядро собирается как статическая библиотека `smpb::core` и подключается к другим CMake-проектам через `add_subdirectory` или `FetchContent`.
 - Возможность статической сборки под Linux и Android (aarch64).
 
 ## Сборка
 
 ### Требования
 
-- CMake 3.16 или новее
+- CMake 3.21 или новее
 - Компилятор с поддержкой C++23 (проверено на GCC 15)
 - Ninja или Make
 
@@ -48,7 +50,25 @@ cmake -S . -B build -G Ninja
 cmake --build build
 ```
 
-Если `CMAKE_BUILD_TYPE` не задан, по умолчанию используется `Release`. В `Release` включается межмодульная оптимизация (LTO), если компилятор её поддерживает: она нужна, чтобы методы `Core_*` встраивались в код компонентов. Для LTO с GCC нужен `gcc-ar`; если его нет, CMake собирает проект без LTO.
+Собираются две цели:
+
+| Цель | Тип | Результат | Описание |
+|------|-----|-----------|----------|
+| `smpb_core` (псевдоним `smpb::core`) | статическая библиотека | `libsmpb_core.a` | Ядро: `Core`, `BaseComponent`, `BaseTask`, `Config`, `tools`. Публичные заголовки лежат в `include/smpb/` и подключаются как `<smpb/Core.h>`. Требование C++23 передаётся всем, кто линкуется с библиотекой. |
+| `smpb` | программа | `smpb` | Программа из `main.cpp`, слинкованная с `smpb::core`. Собирается, только если включена опция `SMPB_BUILD_APP`. |
+
+Если `CMAKE_BUILD_TYPE` не задан, по умолчанию используется `Release`. В `Release` включается межмодульная оптимизация (LTO), если компилятор её поддерживает: она нужна, чтобы методы `Core_*` встраивались в код компонентов. Для LTO с GCC нужен `gcc-ar`; если его нет, CMake собирает проект без LTO. Тип сборки и LTO настраиваются только тогда, когда smpb собирается как самостоятельный проект. Внутри другого проекта эти настройки берутся из него.
+
+| Опция | По умолчанию | Описание |
+|-------|--------------|----------|
+| `SMPB_BUILD_APP` | `ON`, если smpb собирается сам; `OFF` внутри другого проекта | Собирать ли программу `smpb` |
+
+Сборка только библиотеки:
+
+```bash
+cmake -S . -B build -G Ninja -DSMPB_BUILD_APP=OFF
+cmake --build build
+```
 
 Отладочная сборка:
 
@@ -58,6 +78,14 @@ cmake --build build-debug
 ```
 
 Для сборки через Make флаг `-G Ninja` не указывается, а в папке сборки запускается `make`.
+
+Установка программы `smpb` в `bin/` выбранного префикса:
+
+```bash
+cmake --install build --prefix /путь/установки
+```
+
+Устанавливается только программа: библиотека и заголовки не устанавливаются.
 
 ### Сборка под Android (aarch64)
 
@@ -76,7 +104,53 @@ cmake -S . -B build/Android -G Ninja -DCMAKE_TOOLCHAIN_FILE=android.toolchain.cm
 
 Если компиляторы не найдены, CMake завершается с ошибкой.
 
-Файл `AndroidFix.cpp` содержит заглушку `__libcpp_verbose_abort`, которую требует линкер Android при статической сборке через NDK r27. Toolchain-файл выставляет переменную `SMPB_ANDROID`, и только при ней `AndroidFix.cpp` добавляется в сборку. Кроме того, код внутри файла обёрнут в `#ifdef __ANDROID__`, поэтому на других платформах он пустой.
+Файл `AndroidFix.cpp` содержит заглушку `__libcpp_verbose_abort`, которую требует линкер Android при статической сборке через NDK r27. Toolchain-файл выставляет переменную `SMPB_ANDROID`, и только при ней `AndroidFix.cpp` добавляется в сборку программы `smpb` (в библиотеку `smpb::core` он не входит). Кроме того, код внутри файла обёрнут в `#ifdef __ANDROID__`, поэтому на других платформах он пустой.
+
+## Подключение к другому проекту
+
+Ядро подключается как CMake-подпроект. В этом случае собирается только библиотека `smpb::core`: программа `smpb` не собирается, а тип сборки и LTO не меняются.
+
+### Через `add_subdirectory`
+
+Если исходники smpb лежат рядом с проектом или внутри него:
+
+```cmake
+cmake_minimum_required(VERSION 3.21)
+project(myapp LANGUAGES CXX)
+
+add_subdirectory(../smpb smpb)
+
+add_executable(myapp main.cpp)
+target_link_libraries(myapp PRIVATE smpb::core)
+```
+
+Второй аргумент `add_subdirectory` (папка сборки) обязателен, если путь к smpb лежит вне папки проекта.
+
+### Через `FetchContent`
+
+smpb скачивается из репозитория при конфигурации проекта:
+
+```cmake
+cmake_minimum_required(VERSION 3.21)
+project(myapp LANGUAGES CXX)
+
+include(FetchContent)
+FetchContent_Declare(smpb
+  GIT_REPOSITORY https://github.com/Artem1123234232/SMPB.git
+  GIT_TAG        main
+)
+FetchContent_MakeAvailable(smpb)
+
+add_executable(myapp main.cpp)
+target_link_libraries(myapp PRIVATE smpb::core)
+```
+
+В обоих случаях заголовки подключаются с префиксом `smpb/`:
+
+```cpp
+#include <smpb/Core.h>
+#include <smpb/BaseComponent.h>
+```
 
 ## Запуск
 
@@ -175,7 +249,7 @@ Tick #12 end; Expected TPS: 20; Tick duration: 0.013 ms, 0.000 ticks (util: 0.02
 
 ### Core
 
-`Core/Core.h`, `Core/Core.cpp`
+`include/smpb/Core.h`, `src/smpb/Core.cpp`
 
 Центральный класс: хранит компоненты, крутит главный цикл и маршрутизирует задачи. Копирование запрещено.
 
@@ -216,7 +290,7 @@ Tick #12 end; Expected TPS: 20; Tick duration: 0.013 ms, 0.000 ticks (util: 0.02
 
 ### BaseComponent
 
-`Core/BaseComponent.h`, `Core/BaseComponent.cpp`
+`include/smpb/BaseComponent.h`, `src/smpb/BaseComponent.cpp`
 
 Базовый класс всех компонентов. Хранит имя компонента и указатель на ядро, даёт наследникам API для работы с ядром и виртуальные методы жизненного цикла.
 
@@ -271,7 +345,7 @@ Tick #12 end; Expected TPS: 20; Tick duration: 0.013 ms, 0.000 ticks (util: 0.02
 
 ### BaseTask
 
-`Core/BaseTask.h`, `Core/BaseTask.cpp`
+`include/smpb/BaseTask.h`, `src/smpb/BaseTask.cpp`
 
 Базовый класс задачи, которую один компонент передаёт другому. Для передачи данных создаётся наследник с нужными полями.
 
@@ -299,7 +373,7 @@ Tick #12 end; Expected TPS: 20; Tick duration: 0.013 ms, 0.000 ticks (util: 0.02
 
 ### Config
 
-`Core/Config.h`, `Core/Config.cpp` — наследник `BaseComponent`, имя компонента `"Config"`.
+`include/smpb/Config.h`, `src/smpb/Config.cpp` — наследник `BaseComponent`, имя компонента `"Config"`.
 
 Компонент начальной настройки: выводит аргументы командной строки и применяет команды из `core.config`.
 
@@ -314,7 +388,7 @@ Tick #12 end; Expected TPS: 20; Tick duration: 0.013 ms, 0.000 ticks (util: 0.02
 
 ### Функции tools.h
 
-`Core/tools.h`, `Core/tools.cpp`. Вспомогательные функции, не привязанные к классам.
+`include/smpb/tools.h`, `src/smpb/tools.cpp`. Вспомогательные функции, не привязанные к классам.
 
 | Функция | Описание |
 |---------|----------|
@@ -331,10 +405,10 @@ Tick #12 end; Expected TPS: 20; Tick duration: 0.013 ms, 0.000 ticks (util: 0.02
 ## Пример: компонент и задача
 
 ```cpp
-#include "Core/Core.h"
-#include "Core/Config.h"
-#include "Core/BaseComponent.h"
-#include "Core/BaseTask.h"
+#include <smpb/Core.h>
+#include <smpb/Config.h>
+#include <smpb/BaseComponent.h>
+#include <smpb/BaseTask.h>
 
 // Задача с данными
 class PrintTask : public BaseTask {
@@ -387,18 +461,24 @@ int main(int argc, char *argv[]) {
 
 ```
 smpb/
-├── main.cpp                  Точка входа: создаёт Core, добавляет Config, запускает цикл
+├── main.cpp                  Точка входа программы smpb: создаёт Core, добавляет Config, запускает цикл
 ├── AndroidFix.cpp            Заглушка для статической сборки под Android NDK r27 (собирается только под Android)
-├── CMakeLists.txt            Сборка
+├── CMakeLists.txt            Сборка библиотеки smpb::core и программы smpb
 ├── android.toolchain.cmake   Toolchain для кросс-компиляции под aarch64 Android
 ├── core.config               Пример конфигурации
 ├── test_graph_system.py      Экспериментальный скрипт: разбиение графа на слои
-├── Core/
-│   ├── Core.h / .cpp           Ядро: цикл тиков, компоненты, маршрутизация задач
-│   ├── BaseComponent.h / .cpp  Базовый класс компонента и API ядра
-│   ├── BaseTask.h / .cpp       Базовый класс задачи
-│   ├── Config.h / .cpp         Компонент чтения core.config
-│   └── tools.h / .cpp          Вспомогательные функции (чтение файлов)
+├── include/smpb/             Публичные заголовки библиотеки
+│   ├── Core.h                  Ядро: цикл тиков, компоненты, маршрутизация задач
+│   ├── BaseComponent.h         Базовый класс компонента и API ядра
+│   ├── BaseTask.h              Базовый класс задачи
+│   ├── Config.h                Компонент чтения core.config
+│   └── tools.h                 Вспомогательные функции (чтение файлов)
+├── src/smpb/                 Реализация библиотеки
+│   ├── Core.cpp
+│   ├── BaseComponent.cpp
+│   ├── BaseTask.cpp
+│   ├── Config.cpp
+│   └── tools.cpp
 ├── LICENSE
 └── README.md
 ```

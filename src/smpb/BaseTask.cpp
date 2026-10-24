@@ -1,4 +1,4 @@
-#include "BaseTask.h"
+#include <smpb/BaseTask.h>
 
 BaseTask::BaseTask(uint32_t t_taskIdx)
  : taskIdx(t_taskIdx) {

@@ -1,7 +1,7 @@
-#include "Config.h"
+#include <smpb/Config.h>
 
 // Core class
-#include "Core.h"
+#include <smpb/Core.h>
 
 #include <charconv>
 

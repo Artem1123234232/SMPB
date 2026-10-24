@@ -1,10 +1,10 @@
-#include "BaseComponent.h"
+#include <smpb/BaseComponent.h>
 
 // Core class
-#include "Core.h"
+#include <smpb/Core.h>
 
 // Class of base task
-#include "BaseTask.h"
+#include <smpb/BaseTask.h>
 
 BaseComponent::BaseComponent(std::string name) : componentName(std::move(name)) {
     // Constructor

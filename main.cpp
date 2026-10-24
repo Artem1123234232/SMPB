@@ -10,13 +10,10 @@
 #include <cmath>
 
 // Ядро и его компоненты
-#include "Core/Config.h"
-#include "Core/Core.h"
-//#include "Console/TuiMenu.h"
+#include <smpb/Config.h>
+#include <smpb/Core.h>
 
 int main(int argc, char *argv[]) {
-    //TuiMenu tuiMenu = TuiMenu();
-
     Core core = Core();
     core.setDebugModeEnabled(true);
     core.appendComponent(std::make_unique<Config>(argc, argv));

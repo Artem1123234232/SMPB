@@ -1,11 +1,11 @@
 // Core class
-#include "Core.h"
+#include <smpb/Core.h>
 
 // Class of base task
-#include "BaseTask.h"
+#include <smpb/BaseTask.h>
 
 // Class of base component
-#include "BaseComponent.h"
+#include <smpb/BaseComponent.h>
 
 #include <csignal>
 #include <exception>
